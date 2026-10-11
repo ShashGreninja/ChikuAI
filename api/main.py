@@ -48,6 +48,11 @@ def places(q: str = Query(min_length=2, max_length=80)):
         raise HTTPException(503, str(e)) from e
 
 
+@app.get("/api/now")
+def now(lat: float = Query(ge=6, le=38), lon: float = Query(ge=68, le=98)):
+    return planner.now_snapshot(_forecast(lat, lon))
+
+
 class PlanQuery(BaseModel):
     lat: float = Field(ge=6, le=38)
     lon: float = Field(ge=68, le=98)
@@ -138,4 +143,6 @@ def ask(req: AskRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    import os
+
+    uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")))

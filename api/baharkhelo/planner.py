@@ -324,5 +324,17 @@ def day_aqi(fc: Forecast, day: str) -> dict:
     return out
 
 
+def now_snapshot(fc: Forecast) -> dict:
+    """Air and heat at the location right now, for the 'Air right now' sign."""
+    i = min(range(len(fc.hours)), key=lambda k: abs((fc.hours[k].time - fc.now).total_seconds()))
+    h = fc.hours[i]
+    value, dom, _ = aqi.aqi(aqi.official_conc(fc.hours, i))
+    return {
+        "aqi": value, "aqi_cat": aqi.category(value), "dominant": aqi.LABEL[dom],
+        "temp": round(h.temp), "feels": round(h.feels), "wbgt": round(heat.wbgt(h.temp, h.rh, h.sw), 1),
+        "is_day": 6 <= fc.now.hour < 19,
+    }
+
+
 def _public_hour(h: dict) -> dict:
     return {k: v for k, v in h.items() if k != "strain"} | {"status": STATUS[h["level"]]["key"]}
