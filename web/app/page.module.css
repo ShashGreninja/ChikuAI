@@ -1,0 +1,42 @@
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 20px 0;
+}
+
+.hero {
+  padding: 26px 0 28px;
+  max-width: 760px;
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.hero p {
+  font-size: 1.1rem;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+.out {
+  position: relative;
+  white-space: nowrap;
+  isolation: isolate;
+}
+
+/* hand-drawn underline */
+.out::after {
+  content: "";
+  position: absolute;
+  left: -2px;
+  right: -2px;
+  bottom: 0.08em;
+  height: 0.32em;
+  background: var(--marigold);
+  border-radius: 40% 60% 50% 50%;
+  z-index: -1;
+  transform: rotate(-1.5deg);
+}

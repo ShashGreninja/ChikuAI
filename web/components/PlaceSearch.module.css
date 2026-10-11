@@ -1,0 +1,85 @@
+.wrap {
+  position: relative;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.pin {
+  font-size: 1.1rem;
+}
+
+.region {
+  color: var(--ink-2);
+  font-weight: 400;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.field {
+  position: relative;
+  flex: 1 1 220px;
+}
+
+.list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+
+.option {
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.option[aria-selected="true"] {
+  background: var(--marigold-soft);
+}
+
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.quickBtn {
+  border: 1.5px dashed var(--ink-3);
+  background: transparent;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.quickBtn:hover {
+  border-style: solid;
+  border-color: var(--ink);
+  background: #fff;
+}
+
+.geoError {
+  color: var(--brick);
+  font-size: 0.9rem;
+  margin-top: 6px;
+}

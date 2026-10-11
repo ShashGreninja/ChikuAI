@@ -1,0 +1,69 @@
+.group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.legend {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.hint {
+  color: var(--ink-3);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px 5px;
+  background: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s;
+}
+
+.chip:hover {
+  background: var(--paper-2);
+}
+
+.chip:has(input:focus-visible) {
+  outline: 3px solid var(--marigold);
+  outline-offset: 2px;
+}
+
+.chip[data-on] {
+  background: var(--marigold-soft);
+  box-shadow: 2px 2px 0 var(--line);
+  transform: translate(-1px, -1px);
+}
+
+.text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.sub {
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  line-height: 1.2;
+}
