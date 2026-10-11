@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from baharkhelo import aqi, heat, planner
+from baharkhelo import aqi, budget, heat, planner, prevention
 from baharkhelo.data import Forecast, Hour
 from baharkhelo.exposure import Profile, segments
 
@@ -10,14 +10,15 @@ CLEAN = {"pm2_5": 20, "pm10": 40, "nitrogen_dioxide": 20, "ozone": 40,
          "carbon_monoxide": 500, "sulphur_dioxide": 10}
 
 
-def make_forecast(pm25_by_hour, temp_by_hour=None, now_hour=5):
-    """Two days of synthetic hours: yesterday (for rolling means) + today, same profile."""
+def make_forecast(pm25_by_hour, temp_by_hour=None, now_hour=5, ozone_by_hour=None):
+    """Three days of synthetic hours (yesterday for rolling means, today, tomorrow)."""
     start = datetime(2026, 10, 10, 0)
     hours = []
     for d in range(3):
         for h in range(24):
+            o3 = (ozone_by_hour or (lambda _: CLEAN["ozone"]))(h)
             hours.append(Hour(time=start + timedelta(days=d, hours=h),
-                              conc=CLEAN | {"pm2_5": pm25_by_hour(h)},
+                              conc=CLEAN | {"pm2_5": pm25_by_hour(h), "ozone": o3},
                               temp=(temp_by_hour or (lambda _: 26.0))(h), rh=50, feels=26,
                               uv=3, rain=0, sw=0))
     return Forecast(lat=28.6, lon=77.2, timezone="Asia/Kolkata",
@@ -108,6 +109,59 @@ def test_school_moves_pe_and_never_double_books():
     finals = sorted((r["final"]["start"], r["final"]["end"]) for r in plan["rows"] if r["action"] != "indoors")
     assert all(a[1] <= b[0] for a, b in zip(finals, finals[1:]))
     assert plan["saved_pct"] > 0
+
+
+def test_heat_makes_children_breathe_harder():
+    assert budget.heat_vent_factor(20) == 1.0
+    assert budget.heat_vent_factor(30) == pytest.approx(1.24)
+    assert budget.heat_vent_factor(45) == budget.HEAT_VENT_CAP
+
+
+def test_uncertainty_grows_with_lead_time_and_spikes():
+    calm_soon = budget.uncertainty(2, 1.0, 1.0, 1.0)
+    calm_later = budget.uncertainty(40, 1.0, 1.0, 1.0)
+    spiky = budget.uncertainty(2, 3.0, 1.0, 1.0)
+    assert calm_soon < calm_later < spiky
+
+
+def test_budget_scales_with_air_and_time():
+    clean = make_forecast(lambda h: 15)  # exactly the WHO guideline (other pollutants lower)
+    plan = planner.plan_parent(clean, Profile(minutes=60), "today")
+    # 1 h of moderate play at the guideline ~= 22 L/min * 60 / 12,000 L = 11% of the day
+    assert plan["pick"]["budget_pct"] == pytest.approx(11.0, abs=1.0)
+
+
+def test_steady_clean_hour_beats_one_between_spikes():
+    # 9 AM is clean but sits between two dirty hours; 15 h onwards is a little worse but steady.
+    def pm(h):
+        if h == 9:
+            return 30
+        if h in (8, 10):
+            return 140
+        return 36 if h >= 14 else 140
+    plan = planner.plan_parent(make_forecast(pm), Profile(minutes=60), "today")
+    assert plan["pick"]["start"] >= 14 * 60
+
+
+def test_split_offered_when_two_short_sessions_are_cleaner():
+    # Clean at 7 AM and 6 PM only.
+    fc = make_forecast(lambda h: 20 if h in (7, 18) else 110)
+    plan = planner.plan_parent(fc, Profile(minutes=120), "today")
+    assert plan["split"] is not None
+    starts = [s["start"] for s in plan["split"]["sessions"]]
+    assert starts == [7 * 60, 18 * 60]
+
+
+def test_ozone_day_never_suggests_a_mask():
+    fc = make_forecast(lambda h: 20, ozone_by_hour=lambda h: 260)
+    plan = planner.plan_parent(fc, Profile(), "today")
+    ids = {s["id"] for s in plan["prevention"]}
+    assert "ozone" in ids and "mask" not in ids
+
+
+def test_water_plan_grows_with_heat():
+    p = Profile(activity="sports", minutes=60)
+    assert prevention.water_plan(p, 30, 60)[1] > prevention.water_plan(p, 20, 60)[1]
 
 
 def test_school_fixed_slot_never_moves():
