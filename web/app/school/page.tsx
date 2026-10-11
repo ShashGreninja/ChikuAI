@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import SchoolExperience from "@/components/SchoolExperience";
+import SchoolWorkspace from "@/components/school/SchoolWorkspace";
 
 export const metadata: Metadata = {
   title: "For schools | Bahar Khelo",
   description:
-    "Re-plan PE, recess and assembly around tomorrow's air quality and heat, and send parents a circular in English or Hindi.",
+    "Set up your timetable once. Every morning, Chiku tells you what each outdoor period should do, suggests PE swaps and prepares the bulletin.",
 };
 
 export default function SchoolPage() {
-  return <SchoolExperience />;
+  return <SchoolWorkspace />;
 }

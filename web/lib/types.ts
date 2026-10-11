@@ -133,42 +133,68 @@ export interface IntakeResult {
   usual_time: string | null;
 }
 
-export interface SchoolSlot {
+export interface SchoolPeriodResult {
   id: string;
-  name: string;
-  activity: SchoolActivity;
+  class_id: string;
+  class_name: string;
+  kind: string;
+  kind_label: string;
   start: number;
+  end: number;
+  label: string;
   minutes: number;
-  movable: boolean;
+  level: number;
+  status: StatusInfo;
+  drivers: ("air" | "heat" | "advisory")[];
+  action: string;
+  asthma: { count: number; level: number; status: StatusInfo; action: string } | null;
+  aqi: number;
+  aqi_cat: string;
+  dominant: string;
+  wbgt: number;
+  budget_pct: number;
 }
 
-export type SlotAction = "keep" | "move" | "indoors" | "easy";
-
-export interface SchoolRow {
-  name: string;
-  activity: string;
-  minutes: number;
-  movable: boolean;
-  action: SlotAction;
-  current: WindowView;
-  final: WindowView;
-  saved_pct: number;
-  reasons: string[];
+export interface SwapSide {
+  id: string;
+  class_name: string;
+  from: string;
+  to: string;
+  before: StatusInfo;
+  after: StatusInfo;
+  action: string;
 }
 
-export interface SchoolPlan {
-  mode: "school";
+export interface SchoolSwap {
+  a: SwapSide;
+  b: SwapSide;
+  gain: number;
+}
+
+export interface SchoolDay {
   day: Day;
   date: string;
-  students: number;
-  age: AgeGroup;
+  advisory: boolean;
   school_hours: { start: number; end: number; label: string };
   day_aqi: DayAqi;
   hours: HourView[];
-  rows: SchoolRow[];
-  changes: number;
-  cooler_moves: number;
-  budget_before: number;
-  budget_after: number;
-  saved_pct: number;
+  periods: SchoolPeriodResult[];
+  swaps: SchoolSwap[];
+  counts: Record<StatusKey, number>;
+  asthma_notes: number;
 }
+
+export interface EventDay {
+  day: "today" | "tomorrow" | "2";
+  date: string;
+  window: (WindowView & { drivers: string[]; action: string }) | null;
+}
+
+export interface EventSlots {
+  kind: string;
+  kind_label: string;
+  minutes: number;
+  days: EventDay[];
+  best: string | null;
+}
+

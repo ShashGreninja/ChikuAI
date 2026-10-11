@@ -1,5 +1,5 @@
 import type {
-  Activity, AgeGroup, Day, IntakeResult, Narration, ParentPlan, Place, SchoolPlan, SchoolSlot,
+  Activity, AgeGroup, Day, EventSlots, IntakeResult, Narration, ParentPlan, Place, SchoolDay,
 } from "./types";
 
 export class ApiError extends Error {
@@ -58,22 +58,6 @@ export function readIntake(text: string) {
   return request<IntakeResult>("/api/intake", { method: "POST", body: JSON.stringify({ text }) });
 }
 
-export interface SchoolQuery {
-  lat: number;
-  lon: number;
-  students: number;
-  age: AgeGroup;
-  day: Day;
-  school_start: number;
-  school_end: number;
-  slots: SchoolSlot[];
-}
-
-export function getSchoolPlan(q: SchoolQuery) {
-  const body = { ...q, slots: q.slots.map(({ id: _id, ...s }) => s) };
-  return request<SchoolPlan>("/api/school", { method: "POST", body: JSON.stringify(body) });
-}
-
 export interface AirNow {
   aqi: number;
   aqi_cat: string;
@@ -122,25 +106,51 @@ export function downloadParentReport(q: ParentQuery, place: string, name: string
   return download("/api/report/parent", { ...q, place, name, note }, "bahar-khelo-plan.pdf");
 }
 
-export interface SchoolReportQuery extends SchoolQuery {
+// ---------------------------------------------------------------- Schools
+
+export interface SchoolDayQuery {
+  lat: number;
+  lon: number;
+  day: "today" | "tomorrow";
+  advisory: boolean;
+  school_start: number;
+  school_end: number;
+  classes: { id: string; name: string; age: AgeGroup; asthma: number }[];
+  periods: { id: string; class_id: string; kind: string; start: number; minutes: number }[];
+}
+
+export function checkSchoolDay(q: SchoolDayQuery) {
+  return request<SchoolDay>("/api/school/day", { method: "POST", body: JSON.stringify(q) });
+}
+
+export interface BulletinQuery extends SchoolDayQuery {
   place: string;
   school_name: string;
-  circular: string;
 }
 
-function schoolBody(q: SchoolReportQuery) {
-  return { ...q, slots: q.slots.map(({ id: _id, ...s }) => s) };
+export function downloadBulletin(q: BulletinQuery) {
+  return download("/api/school/bulletin", q, "bahar-khelo-bulletin.pdf");
 }
 
-export function downloadSchoolReport(q: SchoolReportQuery) {
-  return download("/api/report/school", schoolBody(q), "bahar-khelo-timetable.pdf");
-}
-
-export function emailSchoolReport(q: SchoolReportQuery, to: string[]) {
-  return request<{ sent: number }>("/api/report/school/email", {
+export function emailBulletin(q: BulletinQuery, to: string[], message: string) {
+  return request<{ sent: number }>("/api/school/bulletin/email", {
     method: "POST",
-    body: JSON.stringify({ ...schoolBody(q), to }),
+    body: JSON.stringify({ ...q, to, message }),
   });
+}
+
+export interface EventQuery {
+  lat: number;
+  lon: number;
+  age: AgeGroup;
+  kind: string;
+  minutes: number;
+  earliest: number;
+  latest: number;
+}
+
+export function findEventSlots(q: EventQuery) {
+  return request<EventSlots>("/api/school/events", { method: "POST", body: JSON.stringify(q) });
 }
 
 export function askChiku(question: string, context: Record<string, string | number | boolean | null>) {
