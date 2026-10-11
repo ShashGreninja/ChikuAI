@@ -15,10 +15,10 @@ load_dotenv(HERE / ".env")
 load_dotenv(HERE.parent / ".env")
 
 import uvicorn  # noqa: E402
-from fastapi import Depends, FastAPI, HTTPException, Query  # noqa: E402
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
-from baharkhelo import agent, data, planner  # noqa: E402
+from baharkhelo import agent, data, mailer, planner, report  # noqa: E402
 from baharkhelo.exposure import Profile  # noqa: E402
 
 log = logging.getLogger("baharkhelo")
@@ -37,7 +37,12 @@ def _forecast(lat: float, lon: float) -> data.Forecast:
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "agent": agent.enabled()}
+    return {"ok": True, "agent": agent.enabled(), "email": mailer.enabled()}
+
+
+def _pdf(content: bytes, filename: str) -> Response:
+    return Response(content, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 
 
 @app.get("/api/places")
@@ -83,6 +88,19 @@ def narrate(req: NarrateRequest):
     return agent.narrate(req.run(), (req.name or "").strip() or None, req.lang)
 
 
+class ParentReportRequest(NarrateRequest):
+    place: str = Field(max_length=80)
+    note: str | None = Field(None, max_length=800)
+
+
+@app.post("/api/report/parent")
+def parent_report(req: ParentReportRequest):
+    plan = req.run()
+    name = (req.name or "").strip() or None
+    pdf = report.parent_pdf(plan, req.place, name, req.note)
+    return _pdf(pdf, f"bahar-khelo-{report.slug(name or 'plan')}-{plan['date']}.pdf")
+
+
 class IntakeRequest(BaseModel):
     text: str = Field(min_length=3, max_length=500)
 
@@ -124,6 +142,53 @@ def school(req: SchoolRequest):
                                    req.students, req.day, req.age, req.school_start, req.school_end)
     except ValueError as e:
         raise HTTPException(422, str(e)) from e
+
+
+class SchoolReportRequest(SchoolRequest):
+    place: str = Field(max_length=80)
+    school_name: str = Field("our school", max_length=60)
+    circular: str = Field("", max_length=3000)
+
+
+def _school_pdf(req: SchoolReportRequest) -> tuple[bytes, str, dict]:
+    plan = school(req)
+    pdf = report.school_pdf(plan, req.place, req.school_name, req.circular)
+    return pdf, f"bahar-khelo-{report.slug(req.school_name)}-{plan['date']}.pdf", plan
+
+
+@app.post("/api/report/school")
+def school_report(req: SchoolReportRequest):
+    pdf, filename, _ = _school_pdf(req)
+    return _pdf(pdf, filename)
+
+
+EMAIL_RE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+
+class SchoolEmailRequest(SchoolReportRequest):
+    to: list[str] = Field(min_length=1, max_length=mailer.MAX_RECIPIENTS)
+
+
+@app.post("/api/report/school/email")
+def school_email(req: SchoolEmailRequest, request: Request):
+    import re
+
+    to = [t.strip() for t in req.to if t.strip()]
+    if not to or any(not re.match(EMAIL_RE, t) for t in to):
+        raise HTTPException(422, "Check the email addresses.")
+    if not mailer.enabled():
+        raise HTTPException(503, "Email isn't set up on this server.")
+    if not mailer.allow(request.client.host if request.client else "unknown"):
+        raise HTTPException(429, "That's a lot of emails. Try again in an hour.")
+    pdf, filename, plan = _school_pdf(req)
+    try:
+        mailer.send_report(
+            to, f"Outdoor timetable for {req.school_name}, {report.pretty_date(plan['date'])}",
+            f"{req.circular}\n\nThe full report is attached.\n\nSent with Bahar Khelo.", pdf, filename)
+    except mailer.MailError as e:
+        log.warning("email failed: %s", e)
+        raise HTTPException(502, "The email couldn't be sent. Download the report and attach it instead.") from e
+    return {"sent": len(to)}
 
 
 class AskRequest(BaseModel):
