@@ -76,7 +76,7 @@ export default function SchoolPlanner() {
   }
 
   return (
-    <div className={planner.layout}>
+    <div className={planner.layout} data-answer-first={plan || undefined}>
       <form className={`${ui.card} ${planner.form}`} onSubmit={run} aria-label="School day details">
         <PlaceSearch value={place} onChange={setPlace} label="School location" />
 

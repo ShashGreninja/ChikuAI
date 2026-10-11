@@ -130,4 +130,8 @@
   .form {
     position: static;
   }
+  /* on phones, once there's an answer, show it before the form */
+  .layout[data-answer-first] .results {
+    order: -1;
+  }
 }

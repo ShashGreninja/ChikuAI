@@ -53,7 +53,7 @@ export default function ParentPlanner() {
   }, [place, age, activity, minutes, asthma, day, usual]);
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} data-answer-first={(place && plan) || undefined}>
       <aside className={`${ui.card} ${styles.form}`} aria-label="Tell Chiku about the outing">
         <PlaceSearch value={place} onChange={setPlace} />
 
