@@ -89,7 +89,7 @@ npm --prefix web install
 .\dev.ps1
 ```
 
-Open http://localhost:3000. The planner needs no keys. To turn on the AI features (free-text answers, Chiku's personal note, Ask Chiku), copy `api/.env.example` to `api/.env` and add a free Gemini key from https://aistudio.google.com/apikey.
+Open http://localhost:3000. The planner needs no keys. To turn on the AI features (free-text answers, Chiku's personal note, Ask Chiku), copy `.env.example` to `.env` in the project root and add a free Gemini key from https://aistudio.google.com/apikey. The file lists every optional setting (phone calls, AWS) with notes.
 
 Tests:
 

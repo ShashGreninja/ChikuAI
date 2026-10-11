@@ -109,7 +109,7 @@ class IntakeRequest(BaseModel):
 @app.post("/api/intake")
 def intake(req: IntakeRequest):
     if not agent.enabled():
-        raise HTTPException(503, "Free-text answers need GEMINI_API_KEY in api/.env")
+        raise HTTPException(503, "Free-text answers need GEMINI_API_KEY in .env")
     try:
         return agent.intake(req.text)
     except Exception as e:
@@ -275,7 +275,7 @@ class AskRequest(BaseModel):
 @app.post("/api/ask")
 def ask(req: AskRequest):
     if not agent.enabled():
-        raise HTTPException(503, "Chiku's chat needs GEMINI_API_KEY in api/.env")
+        raise HTTPException(503, "Chiku's chat needs GEMINI_API_KEY in .env")
     try:
         return {"answer": agent.ask(req.question, req.context)}
     except Exception as e:
