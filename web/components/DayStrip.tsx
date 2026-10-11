@@ -34,6 +34,20 @@ export default function DayStrip({ hours, from = 6, to = 20, markers = [], nowMi
   const width = (a: number, b: number) => `${((b - a) / span) * 100}%`;
   const hovered = shown.find((h) => h.hour === hover);
 
+  // Stack marker labels on extra rows when they'd collide.
+  const rowEnd: number[] = [];
+  const placed = [...markers]
+    .sort((a, b) => a.start - b.start)
+    .map((m) => {
+      // ~12 minutes of axis per label character at typical widths
+      const labelEnd = m.start + Math.max(m.end - m.start, m.label.length * 12 + 20);
+      let row = rowEnd.findIndex((end) => end <= m.start);
+      if (row === -1) row = rowEnd.length;
+      rowEnd[row] = labelEnd;
+      return { ...m, row };
+    });
+  const labelRows = Math.max(1, rowEnd.length);
+
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
@@ -85,13 +99,17 @@ export default function DayStrip({ hours, from = 6, to = 20, markers = [], nowMi
         </div>
       ) : (
         <div className={styles.chart}>
-          <div className={styles.rowLabels} aria-hidden>
+          <div className={styles.rowLabels} aria-hidden style={{ paddingTop: 6 + labelRows * 20 }}>
             <span className={styles.rowLabelMain}>Overall</span>
             <span>Air</span>
             <span>Heat</span>
           </div>
 
-          <div className={styles.plot} onMouseLeave={() => setHover(null)}>
+          <div
+            className={styles.plot}
+            onMouseLeave={() => setHover(null)}
+            style={{ paddingTop: 6 + labelRows * 20, paddingBottom: band ? 26 : 0 }}
+          >
             {band && (
               <div className={styles.band} style={{ left: pos(band.start), width: width(band.start, band.end) }}>
                 <span>{band.label}</span>
@@ -123,19 +141,21 @@ export default function DayStrip({ hours, from = 6, to = 20, markers = [], nowMi
               })}
             </div>
 
-            {markers.map((m, i) => (
+            {placed.map((m, i) => (
               <div
                 key={`${m.kind}-${i}`}
                 className={styles.marker}
                 data-kind={m.kind}
-                style={{ left: pos(m.start), width: width(m.start, m.end) }}
+                style={{ left: pos(m.start), width: width(m.start, m.end), top: labelRows * 20 - 2 }}
               >
-                <span className={styles.markerLabel}>{m.label}</span>
+                <span className={styles.markerLabel} style={{ top: -22 - (labelRows - 1 - m.row) * 20 }}>
+                  {m.label}
+                </span>
               </div>
             ))}
 
             {nowMin !== null && nowMin >= from * 60 && nowMin < to * 60 && (
-              <div className={styles.now} style={{ left: pos(nowMin) }}>
+              <div className={styles.now} style={{ left: pos(nowMin), top: labelRows * 20 }}>
                 <span>now</span>
               </div>
             )}
