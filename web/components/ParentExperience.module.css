@@ -33,7 +33,8 @@
 @media (max-width: 760px) {
   .stage {
     padding: 20px 14px 40px;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: stretch;
   }
   .inner {
     grid-template-columns: 1fr;

@@ -74,6 +74,20 @@ export function getSchoolPlan(q: SchoolQuery) {
   return request<SchoolPlan>("/api/school", { method: "POST", body: JSON.stringify(body) });
 }
 
+export interface AirNow {
+  aqi: number;
+  aqi_cat: string;
+  dominant: string;
+  temp: number;
+  feels: number;
+  wbgt: number;
+  is_day: boolean;
+}
+
+export function getNow(lat: number, lon: number) {
+  return request<AirNow>(`/api/now?lat=${lat}&lon=${lon}`);
+}
+
 export function getHealth() {
   return request<{ ok: boolean; agent: boolean }>("/api/health");
 }
