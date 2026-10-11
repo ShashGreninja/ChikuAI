@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from baharkhelo import aqi, budget, heat, planner, prevention
+from baharkhelo import aqi, budget, heat, planner, prevention, report
 from baharkhelo.data import Forecast, Hour
 from baharkhelo.exposure import Profile, segments
 
@@ -162,6 +162,20 @@ def test_ozone_day_never_suggests_a_mask():
 def test_water_plan_grows_with_heat():
     p = Profile(activity="sports", minutes=60)
     assert prevention.water_plan(p, 30, 60)[1] > prevention.water_plan(p, 20, 60)[1]
+
+
+def test_report_text_is_safe_for_pdf_fonts():
+    assert report.clean("NO₂ ≈ 3 → ok — done") == "NO2 ~ 3 -> ok, done"
+    assert report.clean("आरव") == ""
+
+
+def test_parent_and_school_reports_are_pdfs():
+    fc = make_forecast(lambda h: 25 if h < 12 else 140)
+    plan = planner.plan_parent(fc, Profile(), "today")
+    assert report.parent_pdf(plan, "Delhi", "Aarav", "note").startswith(b"%PDF")
+    slots = [{"name": "PE", "activity": "pe", "start": 11 * 60, "minutes": 40}]
+    school = planner.plan_school(fc, slots, day="today")
+    assert report.school_pdf(school, "Delhi", "DPS", "Dear Parents").startswith(b"%PDF")
 
 
 def test_school_fixed_slot_never_moves():
