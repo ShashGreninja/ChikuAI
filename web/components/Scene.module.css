@@ -1,0 +1,215 @@
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  border-bottom: 2px solid var(--line);
+
+  --sky-top: #8ec5e6;
+  --sky-bottom: #e6f3f4;
+  --sun: #ffd25e;
+  --haze: #d9c8a4;
+  --haze-o: 0;
+  --city: #a9c3cf;
+  --tree: #7fae6a;
+  --ground: #bcd88e;
+  --cloud: #ffffff;
+  --cloud-o: 0.9;
+  --moon-o: 0;
+  --sun-o: 1;
+  --ink-o: 0.75;
+}
+
+.scene[data-sky="hazy"] {
+  --sky-top: #c4ccc6;
+  --sky-bottom: #ece4cf;
+  --sun: #f5d58c;
+  --haze-o: 0.25;
+  --city: #b5b2a3;
+  --tree: #8ba375;
+  --cloud-o: 0.55;
+}
+
+.scene[data-sky="smog"] {
+  --sky-top: #a59a86;
+  --sky-bottom: #d8c7a6;
+  --sun: #f0c178;
+  --haze: #b8a07c;
+  --haze-o: 0.45;
+  --city: #8f8676;
+  --tree: #7d8d62;
+  --ground: #b1b783;
+  --cloud-o: 0.25;
+  --sun-o: 0.55;
+}
+
+.scene[data-sky="hot"] {
+  --sky-top: #f2b56b;
+  --sky-bottom: #fde8c2;
+  --sun: #ffb43a;
+  --haze: #f6c98c;
+  --haze-o: 0.18;
+  --city: #d9a77a;
+  --tree: #8fa860;
+  --ground: #d6cf8c;
+  --cloud-o: 0.4;
+}
+
+.scene[data-sky="night"] {
+  --sky-top: #23314f;
+  --sky-bottom: #4a5874;
+  --city: #36415a;
+  --tree: #3c5847;
+  --ground: #4d6646;
+  --cloud: #8592ad;
+  --cloud-o: 0.35;
+  --sun-o: 0;
+  --moon-o: 1;
+  --ink-o: 0.45;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.skyTop {
+  stop-color: var(--sky-top);
+  transition: stop-color 1.2s ease;
+}
+
+.skyBottom {
+  stop-color: var(--sky-bottom);
+  transition: stop-color 1.2s ease;
+}
+
+.sun {
+  opacity: var(--sun-o);
+  transition: opacity 1.2s ease;
+}
+
+.sunGlow {
+  fill: var(--sun);
+  opacity: 0.3;
+  transition: fill 1.2s ease;
+}
+
+.sunDisc {
+  fill: var(--sun);
+  stroke: var(--line);
+  stroke-width: 2.5;
+  transition: fill 1.2s ease;
+}
+
+.scene[data-sky="hot"] .sunGlow {
+  animation: pulse 3s ease-in-out infinite;
+  transform-origin: 1210px 96px;
+}
+
+.moon {
+  opacity: var(--moon-o);
+  transition: opacity 1.2s ease;
+}
+
+.moonCut {
+  fill: var(--sky-top);
+  transition: fill 1.2s ease;
+}
+
+.clouds {
+  fill: var(--cloud);
+  opacity: var(--cloud-o);
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-opacity: 0.25;
+  animation: drift 60s linear infinite alternate;
+  transition: opacity 1.2s ease;
+}
+
+.city {
+  fill: var(--city);
+  transition: fill 1.2s ease;
+}
+
+.haze {
+  fill: var(--haze);
+  opacity: var(--haze-o);
+  transition: opacity 1.2s ease, fill 1.2s ease;
+}
+
+.trees {
+  fill: var(--tree);
+  stroke: var(--line);
+  stroke-width: 2.5;
+  transition: fill 1.2s ease;
+}
+
+.trunks {
+  fill: #7b5236;
+  stroke: var(--line);
+  stroke-width: 2;
+}
+
+.ground {
+  fill: var(--ground);
+  stroke: var(--line);
+  stroke-width: 2.5;
+  transition: fill 1.2s ease;
+}
+
+.path {
+  fill: none;
+  stroke: #f1e2c6;
+  stroke-width: 26;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+.swing {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: var(--ink-o);
+}
+
+.swingSeat {
+  transform-origin: 1096px 262px;
+  animation: swing 3.2s ease-in-out infinite;
+}
+
+.scene[data-sky="smog"] .swingSeat,
+.scene[data-sky="night"] .swingSeat {
+  animation: none;
+}
+
+.birds {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: var(--ink-o);
+  animation: drift 24s ease-in-out infinite alternate;
+}
+
+.scene[data-sky="smog"] .birds,
+.scene[data-sky="night"] .birds {
+  opacity: 0;
+}
+
+@keyframes drift {
+  from { transform: translateX(-30px); }
+  to { transform: translateX(40px); }
+}
+
+@keyframes swing {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(12deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.15); opacity: 0.45; }
+}
