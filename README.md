@@ -97,13 +97,6 @@ Tests:
 cd api; ..\.venv\Scripts\python -m pytest
 ```
 
-## Deploy on AWS
-
-- **API → AWS App Runner** from this repo, source directory `api`, using `api/apprunner.yaml`. The AI features use Amazon Bedrock (Nova 2 Lite) through the service's instance role, which needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
-- **Web → AWS Amplify Hosting**, monorepo root `web`, with the environment variable `API_URL` set to the App Runner URL. Next.js forwards `/api/*` there.
-- **Phone calls → Twilio.** Set `TWILIO_FROM_NUMBER` and `PUBLIC_BASE_URL` in `api/apprunner.yaml`, and keep `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` in SSM Parameter Store, referenced under `secrets`. Webhooks are signature-checked.
-- **Report emails → Amazon SES.** Set `SES_SENDER` in `api/apprunner.yaml` to a verified SES identity and allow `ses:SendRawEmail` on the instance role. Without it, "Email the report" opens the user's mail app and downloads the PDF to attach.
-
 ## Data & credits
 
 - Forecasts: [Open-Meteo](https://open-meteo.com) (Copernicus CAMS air quality, national weather models), CC BY 4.0
