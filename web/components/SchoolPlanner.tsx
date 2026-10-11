@@ -19,7 +19,7 @@ import styles from "./SchoolPlanner.module.css";
 
 const DEFAULT_SLOTS: SchoolSlot[] = [
   { id: "1", name: "Morning assembly", activity: "assembly", start: 8 * 60, minutes: 20, movable: false },
-  { id: "2", name: "PE — Class 5", activity: "pe", start: 11 * 60, minutes: 40, movable: true },
+  { id: "2", name: "PE, Class 5", activity: "pe", start: 11 * 60, minutes: 40, movable: true },
   { id: "3", name: "Lunch recess", activity: "recess", start: 12 * 60, minutes: 30, movable: true },
   { id: "4", name: "Football practice", activity: "sports", start: 13 * 60 + 15, minutes: 45, movable: true },
 ];

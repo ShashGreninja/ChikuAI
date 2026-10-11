@@ -4,7 +4,7 @@ import home from "../page.module.css";
 import styles from "./how.module.css";
 
 export const metadata: Metadata = {
-  title: "How it works — Bahar Khelo",
+  title: "How it works | Bahar Khelo",
   description: "Data sources, the India AQI calculation, the child breathing model, heat stress and the planner.",
 };
 

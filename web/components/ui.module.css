@@ -1,4 +1,4 @@
-/* Shared building blocks: cards, buttons, fields. Sticker style — ink outline + offset shadow. */
+/* Shared building blocks: cards, buttons, fields. Sticker style: ink outline and an offset shadow. */
 
 .card {
   background: var(--card);

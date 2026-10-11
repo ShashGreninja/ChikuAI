@@ -3,7 +3,7 @@ import SchoolPlanner from "@/components/SchoolPlanner";
 import styles from "../page.module.css";
 
 export const metadata: Metadata = {
-  title: "For schools — Bahar Khelo",
+  title: "For schools | Bahar Khelo",
   description: "Re-plan PE, recess and assembly around tomorrow's air quality and heat, and send parents a circular.",
 };
 

@@ -12,8 +12,8 @@ const ALT: Record<Mood, string> = {
 };
 
 /**
- * Chiku — a house sparrow (Delhi's state bird, and one that has quietly vanished from
- * many Indian cities). Every mood is the same drawing with a few layers switched on.
+ * Chiku is a house sparrow: Delhi's state bird, and one that has quietly vanished from
+ * many Indian cities. Every mood is the same drawing with a few layers switched on.
  */
 export default function Chiku({ mood = "happy", size = 160 }: { mood?: Mood; size?: number }) {
   const eyesClosed = mood === "happy" || mood === "sleepy";

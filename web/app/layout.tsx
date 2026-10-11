@@ -17,9 +17,9 @@ const mukta = Mukta({
 });
 
 export const metadata: Metadata = {
-  title: "Bahar Khelo — when can kids play outside?",
+  title: "Bahar Khelo | When can kids play outside?",
   description:
-    "Hour-by-hour air quality and heat planner for Indian parents and schools. Finds the safest time for children to be outdoors.",
+    "Chiku the sparrow reads the hourly air quality and heat forecast for your neighbourhood and tells Indian parents and schools the safest time for children to play outdoors.",
 };
 
 export const viewport: Viewport = {
