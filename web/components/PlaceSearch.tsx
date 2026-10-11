@@ -14,10 +14,12 @@ const QUICK: Place[] = [
   { name: "Patna", region: "Bihar", lat: 25.5941, lon: 85.1376 },
 ];
 
-export default function PlaceSearch({ value, onChange, label = "Where?" }: {
+export default function PlaceSearch({ value, onChange, label = "Where?", compact = false }: {
   value: Place | null;
   onChange: (p: Place) => void;
   label?: string;
+  /** Inside Chiku's bubble: the question is the label, so hide ours and always show quick picks. */
+  compact?: boolean;
 }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<Place[]>([]);
@@ -106,11 +108,11 @@ export default function PlaceSearch({ value, onChange, label = "Where?" }: {
 
   return (
     <div className={styles.wrap} ref={boxRef}>
-      <label className={ui.label} htmlFor="place-input">
+      <label className={compact ? "visually-hidden" : ui.label} htmlFor="place-input">
         {label}
       </label>
 
-      {value && (
+      {value && !compact && (
         <div className={styles.current}>
           <span className={styles.pin} aria-hidden>
             📍
@@ -165,7 +167,7 @@ export default function PlaceSearch({ value, onChange, label = "Where?" }: {
 
       {geoError && <p className={styles.geoError}>{geoError}</p>}
 
-      {!value && (
+      {(!value || compact) && (
         <div className={styles.quick}>
           {QUICK.map((p) => (
             <button key={p.name} type="button" className={styles.quickBtn} onClick={() => choose(p)}>

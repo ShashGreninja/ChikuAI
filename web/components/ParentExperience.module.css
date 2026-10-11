@@ -1,0 +1,53 @@
+.stage {
+  position: relative;
+  min-height: min(720px, calc(100vh - 90px));
+  display: flex;
+  align-items: flex-end;
+  padding: 48px 24px 54px;
+  isolation: isolate;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 700px);
+  justify-content: center;
+  align-items: end;
+  gap: 18px;
+}
+
+.chiku {
+  /* stands on the grass line of the scene */
+  margin-bottom: -20px;
+  filter: drop-shadow(0 6px 0 rgba(42, 31, 20, 0.08));
+}
+
+.talk {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .stage {
+    padding: 20px 14px 40px;
+    align-items: flex-start;
+  }
+  .inner {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 6px;
+  }
+  .chiku {
+    margin-bottom: 0;
+  }
+  .chiku svg {
+    width: 140px;
+    height: 140px;
+  }
+  .talk {
+    width: 100%;
+  }
+}
