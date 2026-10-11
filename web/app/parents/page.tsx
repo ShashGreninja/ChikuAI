@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import CallChiku from "@/components/CallChiku";
 import ParentExperience from "@/components/ParentExperience";
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function ParentsPage() {
-  return <ParentExperience />;
+  return (
+    <>
+      <ParentExperience />
+      <CallChiku />
+    </>
+  );
 }

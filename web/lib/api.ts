@@ -89,7 +89,14 @@ export function getNow(lat: number, lon: number) {
 }
 
 export function getHealth() {
-  return request<{ ok: boolean; agent: boolean; email: boolean }>("/api/health");
+  return request<{ ok: boolean; agent: boolean; email: boolean; calls: boolean }>("/api/health");
+}
+
+export function requestCall(phone: string, lang: "en" | "hi", consent: boolean) {
+  return request<{ status: string; to: string }>("/api/call", {
+    method: "POST",
+    body: JSON.stringify({ phone, lang, consent }),
+  });
 }
 
 /** POST JSON, receive a file, and hand it to the browser as a download. */
