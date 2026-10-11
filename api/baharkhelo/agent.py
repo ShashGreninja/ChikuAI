@@ -28,6 +28,11 @@ STYLE = ("Write like a warm, practical friend. Short sentences. Never use em das
 
 
 def _model():
+    """Amazon Bedrock when deployed on AWS, otherwise Gemini or Anthropic by API key."""
+    if model_id := os.getenv("BEDROCK_MODEL_ID"):
+        from strands.models import BedrockModel
+        return BedrockModel(model_id=model_id, region_name=os.getenv("AWS_REGION", "ap-south-1"),
+                            temperature=0.4)
     if key := os.getenv("GEMINI_API_KEY"):
         from strands.models.gemini import GeminiModel
         return GeminiModel(client_args={"api_key": key},
@@ -40,7 +45,7 @@ def _model():
 
 
 def enabled() -> bool:
-    return bool(os.getenv("GEMINI_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))
+    return any(os.getenv(k) for k in ("BEDROCK_MODEL_ID", "GEMINI_API_KEY", "ANTHROPIC_API_KEY"))
 
 
 def _clean(text: str) -> str:
