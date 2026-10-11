@@ -6,10 +6,14 @@ import ui from "./ui.module.css";
 import styles from "./ShareBox.module.css";
 
 /** A ready-to-send message in English or Hindi, with copy + WhatsApp. */
-export default function ShareBox({ title, sub, build }: {
+export default function ShareBox({ title, sub, build, actions, children }: {
   title: string;
   sub: string;
   build: (lang: Lang) => string;
+  /** Extra buttons next to Copy and WhatsApp, such as a PDF download. */
+  actions?: React.ReactNode;
+  /** Anything that belongs under the actions, such as the email form. */
+  children?: React.ReactNode;
 }) {
   const [lang, setLang] = useState<Lang>("en");
   const [copied, setCopied] = useState(false);
@@ -56,7 +60,9 @@ export default function ShareBox({ title, sub, build }: {
         >
           Share on WhatsApp
         </a>
+        {actions}
       </div>
+      {children}
     </section>
   );
 }

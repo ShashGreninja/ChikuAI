@@ -1,3 +1,4 @@
+import { downloadParentReport } from "@/lib/api";
 import { childWord, type Answers } from "@/lib/answers";
 import { clock, nf } from "@/lib/format";
 import { parentMessage } from "@/lib/messages";
@@ -5,20 +6,30 @@ import type { ParentPlan } from "@/lib/types";
 import AskChiku from "./AskChiku";
 import BudgetRings, { type BudgetRow } from "./BudgetRings";
 import DayStrip, { type Marker } from "./DayStrip";
+import DownloadButton from "./DownloadButton";
 import ShareBox from "./ShareBox";
 import WhyPanel from "./WhyPanel";
 import ui from "./ui.module.css";
 import styles from "./PlanDashboard.module.css";
 
-export default function PlanDashboard({ plan, answers, chat }: {
+export default function PlanDashboard({ plan, answers, chat, note }: {
   plan: ParentPlan;
   answers: Answers;
   /** Whether the Ask Chiku agent is available on this server. */
   chat: boolean;
+  /** Chiku's note as shown on screen, so the PDF says the same thing. */
+  note: string | null;
 }) {
   const who = childWord(answers);
   const pick = plan.pick;
   const place = answers.place!;
+  const a = answers as Required<Answers>;
+  const download = () =>
+    downloadParentReport(
+      { lat: place.lat, lon: place.lon, age: a.age, activity: a.activity, minutes: a.minutes, asthma: a.asthma,
+        day: a.day, usual: a.usual },
+      place.name, answers.name ?? null, note,
+    );
 
   return (
     <section id="full-picture" className={styles.wrap} aria-label="The full picture">
@@ -27,6 +38,9 @@ export default function PlanDashboard({ plan, answers, chat }: {
         <h2>
           How {who}&apos;s {plan.day === "today" ? "day" : "tomorrow"} looks, hour by hour
         </h2>
+        <div className={styles.headActions}>
+          <DownloadButton make={download} />
+        </div>
       </header>
 
       <div className={styles.tiles}>
@@ -101,6 +115,7 @@ export default function PlanDashboard({ plan, answers, chat }: {
             title="Send it to the family group"
             sub="Grandparents, the driver, the coach: everyone on the same page."
             build={(lang) => parentMessage(plan, place.name, answers.name ?? null, lang)}
+            actions={<DownloadButton make={download} label="Download PDF" />}
           />
         </div>
       </div>

@@ -89,7 +89,51 @@ export function getNow(lat: number, lon: number) {
 }
 
 export function getHealth() {
-  return request<{ ok: boolean; agent: boolean }>("/api/health");
+  return request<{ ok: boolean; agent: boolean; email: boolean }>("/api/health");
+}
+
+/** POST JSON, receive a file, and hand it to the browser as a download. */
+async function download(path: string, body: unknown, fallbackName: string) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }).catch(() => {
+    throw new ApiError("Can't reach the Bahar Khelo server.", 0);
+  });
+  if (!res.ok) throw new ApiError(`Couldn't make the report (${res.status})`, res.status);
+  const name = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ?? fallbackName;
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+export function downloadParentReport(q: ParentQuery, place: string, name: string | null, note: string | null) {
+  return download("/api/report/parent", { ...q, place, name, note }, "bahar-khelo-plan.pdf");
+}
+
+export interface SchoolReportQuery extends SchoolQuery {
+  place: string;
+  school_name: string;
+  circular: string;
+}
+
+function schoolBody(q: SchoolReportQuery) {
+  return { ...q, slots: q.slots.map(({ id: _id, ...s }) => s) };
+}
+
+export function downloadSchoolReport(q: SchoolReportQuery) {
+  return download("/api/report/school", schoolBody(q), "bahar-khelo-timetable.pdf");
+}
+
+export function emailSchoolReport(q: SchoolReportQuery, to: string[]) {
+  return request<{ sent: number }>("/api/report/school/email", {
+    method: "POST",
+    body: JSON.stringify({ ...schoolBody(q), to }),
+  });
 }
 
 export function askChiku(question: string, context: Record<string, string | number | boolean | null>) {

@@ -1,0 +1,37 @@
+.wrap {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 6px 16px 4px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--marigold);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--line);
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+  transform: none;
+}
+
+.err {
+  font-size: 0.8rem;
+  color: var(--brick);
+}
