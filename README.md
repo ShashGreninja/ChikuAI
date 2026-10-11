@@ -20,6 +20,8 @@ Every winter in North India, and on many summer afternoons everywhere, parents a
 
 **For schools**: enter the outdoor periods from the timetable. The planner moves what can move, keeps fixed periods in place (taking them indoors if needed), never double-books a slot, and drafts the circular for parents.
 
+**Reports**: parents and schools can download a one-page PDF of their plan. Schools can also email it, with the PDF attached, straight from the page.
+
 ## The decision model
 
 1. **Guardrails.** Each hour gets an air flag (CPCB National AQI bands, one band stricter with asthma) and a heat flag (outdoor WBGT against youth-sport lines by effort level, stricter for under-6s). A lower flag always wins.
@@ -86,6 +88,7 @@ cd api; ..\.venv\Scripts\python -m pytest
 
 - **API → AWS App Runner** from this repo, source directory `api`, using `api/apprunner.yaml`. The AI features use Amazon Bedrock (Nova 2 Lite) through the service's instance role, which needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
 - **Web → AWS Amplify Hosting**, monorepo root `web`, with the environment variable `API_URL` set to the App Runner URL. Next.js forwards `/api/*` there.
+- **Report emails → Amazon SES.** Set `SES_SENDER` in `api/apprunner.yaml` to a verified SES identity and allow `ses:SendRawEmail` on the instance role. Without it, "Email the report" opens the user's mail app and downloads the PDF to attach.
 
 ## Data & credits
 

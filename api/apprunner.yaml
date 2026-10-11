@@ -25,3 +25,7 @@ run:
     # that allows bedrock:InvokeModel (see README, "Deploy on AWS").
     - name: BEDROCK_MODEL_ID
       value: "global.amazon.nova-2-lite-v1:0"
+    # School report emails go out through Amazon SES from this verified address.
+    # Uncomment and set it once the identity is verified in SES (same region).
+    # - name: SES_SENDER
+    #   value: "you@example.com"
