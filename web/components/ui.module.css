@@ -1,0 +1,118 @@
+/* Shared building blocks: cards, buttons, fields. Sticker style — ink outline + offset shadow. */
+
+.card {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 22px;
+}
+
+.cardTitle {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cardSub {
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 10px 22px 8px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--marigold);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--line);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+  transform: none;
+}
+
+.btnGhost {
+  composes: btn;
+  background: var(--card);
+}
+
+.btnSmall {
+  composes: btn;
+  background: var(--card);
+  font-size: 0.95rem;
+  padding: 6px 14px 4px;
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.label {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.hint {
+  color: var(--ink-3);
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  margin-left: 6px;
+}
+
+.input {
+  width: 100%;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  padding: 10px 14px;
+  font-size: 1rem;
+}
+
+.input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--marigold-soft);
+  border-color: var(--ink);
+}
+
+.error {
+  border: 2px solid var(--brick);
+  background: #fbe3da;
+  color: #6e2410;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-weight: 500;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
