@@ -5,6 +5,7 @@ The Next.js app in ../web proxies /api/* to this server.
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Literal
 
@@ -18,7 +19,7 @@ import uvicorn  # noqa: E402
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
-from baharkhelo import agent, data, mailer, planner, report  # noqa: E402
+from baharkhelo import agent, data, mailer, phone, planner, report, voice  # noqa: E402
 from baharkhelo.exposure import Profile  # noqa: E402
 
 log = logging.getLogger("baharkhelo")
@@ -37,7 +38,7 @@ def _forecast(lat: float, lon: float) -> data.Forecast:
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "agent": agent.enabled(), "email": mailer.enabled()}
+    return {"ok": True, "agent": agent.enabled(), "email": mailer.enabled(), "calls": phone.enabled()}
 
 
 def _pdf(content: bytes, filename: str) -> Response:
@@ -191,6 +192,49 @@ def school_email(req: SchoolEmailRequest, request: Request):
     return {"sent": len(to)}
 
 
+class CallRequest(BaseModel):
+    phone: str = Field(min_length=10, max_length=20)
+    lang: Literal["en", "hi"] = "en"
+    consent: bool
+
+
+@app.post("/api/call")
+def request_call(req: CallRequest, request: Request):
+    if not phone.enabled():
+        raise HTTPException(503, "Calls aren't available right now.")
+    if not req.consent:
+        raise HTTPException(422, "Please tick the box so Chiku can call you.")
+    number = phone.normalise(req.phone)
+    if not number:
+        raise HTTPException(422, "Enter a 10-digit Indian mobile number.")
+    if reason := phone.check_limits(number, request.client.host if request.client else "unknown"):
+        raise HTTPException(429, reason)
+    try:
+        phone.place_call(number, req.lang)
+    except phone.CallError as e:
+        log.warning("call to %s failed: %s", phone.masked(number), e)
+        raise HTTPException(502, "Chiku couldn't place the call. Please try again in a minute.") from e
+    return {"status": "calling", "to": phone.masked(number)}
+
+
+@app.post("/api/voice/{step}")
+async def voice_webhook(step: str, request: Request):
+    """Twilio webhooks for the phone flow. Every hit is signature-checked when Twilio is set up."""
+    from urllib.parse import parse_qsl
+
+    params = dict(parse_qsl((await request.body()).decode()))
+    query = request.url.query
+    if phone.enabled():
+        url = f"{phone.base_url()}{request.url.path}{'?' + query if query else ''}"
+        if not phone.valid_signature(url, params, request.headers.get("X-Twilio-Signature", "")):
+            raise HTTPException(403, "Bad signature")
+    elif not os.getenv("VOICE_DEV"):  # unsigned webhooks only for local testing
+        raise HTTPException(404)
+    state = dict(parse_qsl(query))
+    twiml = voice.handle(step, state, params, phone.base_url())
+    return Response(twiml, media_type="application/xml")
+
+
 class AskRequest(BaseModel):
     question: str = Field(min_length=2, max_length=500)
     context: dict[str, str | float | bool | None] = {}
@@ -208,6 +252,4 @@ def ask(req: AskRequest):
 
 
 if __name__ == "__main__":
-    import os
-
     uvicorn.run(app, host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")))
