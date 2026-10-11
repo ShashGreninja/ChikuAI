@@ -27,7 +27,7 @@ const STEPS: { mood: Mood; title: string; body: string }[] = [
   { mood: "happy", title: "You get a plan", body: "The best time, a checklist that fits the day's air, and a message for the family." },
 ];
 
-/** What the home page shows under the conversation until there's a plan. */
+/** The landing page story: why one AQI number isn't enough, how Chiku helps, and where to go next. */
 export default function WhyChiku() {
   return (
     <div className={styles.wrap}>
@@ -86,6 +86,17 @@ export default function WhyChiku() {
           <span className={styles.arrow} aria-hidden>
             →
           </span>
+        </Link>
+      </section>
+
+      <section className={styles.final}>
+        <Chiku mood="happy" size={110} />
+        <div>
+          <h2>Ready when you are</h2>
+          <p>Takes under a minute. No sign-up.</p>
+        </div>
+        <Link href="/start" className={styles.finalBtn}>
+          Try it out <span aria-hidden>→</span>
         </Link>
       </section>
     </div>
