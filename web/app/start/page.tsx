@@ -22,7 +22,7 @@ const OPTIONS = [
     href: "/school",
     icon: "school",
     title: "For schools",
-    body: "Fit PE, recess and assembly around the air and heat, then share or email the report.",
+    body: "Set up your timetable once. Each morning, get a plan for every outdoor period and a bulletin for staff.",
     tone: "schools",
   },
 ];
