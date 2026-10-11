@@ -3,6 +3,7 @@ export type Day = "today" | "tomorrow";
 export type AgeGroup = "3-5" | "6-10" | "11-15";
 export type Activity = "play" | "cycling" | "sports" | "walk";
 export type SchoolActivity = "pe" | "recess" | "assembly" | "sports" | "walk";
+export type Confidence = "high" | "medium" | "low";
 
 export interface Place {
   name: string;
@@ -23,7 +24,7 @@ export interface HourView {
   aqi_cat: string;
   dominant: string;
   subindex: Record<string, number>;
-  factor: number;
+  wf: number;
   pm25: number;
   temp: number;
   feels: number;
@@ -31,6 +32,8 @@ export interface HourView {
   wbgt: number;
   uv: number;
   rain: number;
+  vent_x: number;
+  u: number;
   air_level: number;
   heat_level: number;
   level: number;
@@ -42,10 +45,12 @@ export interface WindowView {
   end: number;
   label: string;
   start_label: string;
+  minutes: number;
   level: number;
   status: StatusInfo;
-  dose: number;
+  budget_pct: number;
   pm25_ug: number;
+  confidence: Confidence;
   aqi: number;
   aqi_cat: string;
   dominant: string;
@@ -54,6 +59,7 @@ export interface WindowView {
   temp: number;
   uv: number;
   rain: number;
+  vent_x: number;
 }
 
 export interface DayAqi {
@@ -65,6 +71,21 @@ export interface DayAqi {
   now_cat?: string;
 }
 
+export interface Suggestion {
+  id: string;
+  icon: string;
+  title: string;
+  detail: string;
+}
+
+export interface SplitPlan {
+  sessions: [WindowView, WindowView];
+  level: number;
+  status: StatusInfo;
+  budget_pct: number;
+  saved_vs_single_pct: number;
+}
+
 export interface ParentPlan {
   mode: "parent";
   day: Day;
@@ -74,22 +95,42 @@ export interface ParentPlan {
   profile: {
     age: AgeGroup;
     activity: string;
+    activity_key: Activity;
     intensity: string;
     minutes: number;
     asthma: boolean;
     litres_per_min: number;
     body_kg: number;
     per_kg_vs_adult: number;
+    daily_litres: number;
   };
   day_aqi: DayAqi;
   hours: HourView[];
   pick: WindowView | null;
   usual: WindowView | null;
   worst: WindowView | null;
+  split: SplitPlan | null;
   tomorrow_hint: WindowView | null;
   saved_vs_usual_pct: number | null;
   saved_vs_worst_pct: number | null;
-  tips: string[];
+  prevention: Suggestion[];
+}
+
+export interface Narration {
+  text: string;
+  source: "ai" | "template";
+}
+
+export interface IntakeResult {
+  place: string | null;
+  place_match?: Place | null;
+  child_name: string | null;
+  age_group: AgeGroup | null;
+  asthma: boolean | null;
+  activity: Activity | null;
+  minutes: number | null;
+  day: Day | null;
+  usual_time: string | null;
 }
 
 export interface SchoolSlot {
@@ -127,8 +168,7 @@ export interface SchoolPlan {
   rows: SchoolRow[];
   changes: number;
   cooler_moves: number;
-  dose_before: number;
-  dose_after: number;
+  budget_before: number;
+  budget_after: number;
   saved_pct: number;
-  saved_school_dose: number;
 }

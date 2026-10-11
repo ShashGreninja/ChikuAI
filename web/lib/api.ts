@@ -1,4 +1,6 @@
-import type { Activity, AgeGroup, Day, ParentPlan, Place, SchoolPlan, SchoolSlot } from "./types";
+import type {
+  Activity, AgeGroup, Day, IntakeResult, Narration, ParentPlan, Place, SchoolPlan, SchoolSlot,
+} from "./types";
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
@@ -10,7 +12,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
-  } catch {
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") throw e;
     throw new ApiError("Can't reach the Bahar Khelo server. Is the API running?", 0);
   }
   if (!res.ok) {
@@ -40,10 +43,19 @@ export interface ParentQuery {
 }
 
 export function getParentPlan(q: ParentQuery) {
-  const params = new URLSearchParams(
-    Object.entries(q).map(([k, v]) => [k, String(v)]),
-  );
+  const params = new URLSearchParams(Object.entries(q).map(([k, v]) => [k, String(v)]));
   return request<ParentPlan>(`/api/plan?${params}`);
+}
+
+export function getNarration(q: ParentQuery, name: string | null, lang: "en" | "hi") {
+  return request<Narration>("/api/narrate", {
+    method: "POST",
+    body: JSON.stringify({ ...q, name, lang }),
+  });
+}
+
+export function readIntake(text: string) {
+  return request<IntakeResult>("/api/intake", { method: "POST", body: JSON.stringify({ text }) });
 }
 
 export interface SchoolQuery {
