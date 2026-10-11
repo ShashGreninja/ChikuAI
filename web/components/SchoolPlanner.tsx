@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { getSchoolPlan } from "@/lib/api";
-import { fromTimeInput, nf, prettyDate, toTimeInput } from "@/lib/format";
+import { fromTimeInput, toTimeInput } from "@/lib/format";
 import { schoolCircular } from "@/lib/messages";
 import { useStored } from "@/lib/useStored";
 import type { AgeGroup, Day, Place, SchoolPlan, SchoolRow, SchoolSlot } from "@/lib/types";
-import Chiku, { type Mood } from "./Chiku";
 import DayStrip, { type Marker } from "./DayStrip";
 import PlaceSearch from "./PlaceSearch";
 import Segmented from "./Segmented";
@@ -40,7 +39,15 @@ const REASON_LABEL: Record<string, string> = {
   clear: "all clear",
 };
 
-export default function SchoolPlanner() {
+export interface SchoolResultInfo {
+  plan: SchoolPlan;
+  place: Place;
+}
+
+export default function SchoolPlanner({ onResult, onBusy }: {
+  onResult: (r: SchoolResultInfo | null) => void;
+  onBusy: (busy: boolean) => void;
+}) {
   const [place, setPlace] = useStored<Place | null>("bk.place", null);
   const [school, setSchool] = useStored<string>("bk.school", "our school");
   const [students, setStudents] = useState(600);
@@ -61,17 +68,20 @@ export default function SchoolPlanner() {
       return;
     }
     setLoading(true);
+    onBusy(true);
     setError(null);
     try {
-      setPlan(
-        await getSchoolPlan({
-          lat: place.lat, lon: place.lon, students, age, day, school_start: start, school_end: end, slots,
-        }),
-      );
+      const p = await getSchoolPlan({
+        lat: place.lat, lon: place.lon, students, age, day, school_start: start, school_end: end, slots,
+      });
+      setPlan(p);
+      onResult({ plan: p, place });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
+      onResult(null);
     } finally {
       setLoading(false);
+      onBusy(false);
     }
   }
 
@@ -150,45 +160,32 @@ export default function SchoolPlanner() {
           </p>
         )}
 
-        {!plan && !loading && (
-          <div className={planner.empty}>
-            <Chiku mood="careful" size={150} />
-            <div>
-              <h2>One minute, every morning.</h2>
-              <p>
-                Enter the outdoor periods from your timetable. Chiku checks the hourly air and heat forecast for your
-                campus, moves what can move, brings indoors what can&apos;t, and writes the note for parents.
-              </p>
-            </div>
+        {!plan && (
+          <div className={styles.placeholder}>
+            <p className={ui.eyebrow}>What you&apos;ll get</p>
+            <ol>
+              <li>
+                <b>A revised timetable.</b> Each outdoor period is kept, moved to a cleaner or cooler slot, or brought
+                indoors. No two periods overlap.
+              </li>
+              <li>
+                <b>The school day, hour by hour.</b> Air and heat for your campus, with every period marked.
+              </li>
+              <li>
+                <b>A circular for parents</b> in English and Hindi, ready for the class WhatsApp groups.
+              </li>
+            </ol>
           </div>
         )}
 
-        {loading && !plan && (
-          <div className={planner.empty}>
-            <Chiku mood="thinking" size={130} />
-            <p>Checking every period against the forecast…</p>
-          </div>
-        )}
-
-        {plan && place && <SchoolResult plan={plan} place={place} school={school} loading={loading} />}
+        {plan && <SchoolResult plan={plan} school={school} loading={loading} />}
       </div>
     </div>
   );
 }
 
-function SchoolResult({ plan, place, school, loading }: {
-  plan: SchoolPlan;
-  place: Place;
-  school: string;
-  loading: boolean;
-}) {
-  const n = plan.rows.length;
-  const pmBefore = plan.rows.reduce((a, r) => a + r.current.pm25_ug, 0);
-  const pmAfter = plan.rows.reduce((a, r) => a + r.final.pm25_ug, 0);
-  const pmSavedSchoolMg = Math.max(0, ((pmBefore - pmAfter) * plan.students) / 1000);
-  const worstFinal = Math.max(...plan.rows.map((r) => (r.action === "indoors" ? 0 : r.final.level)));
+function SchoolResult({ plan, school, loading }: { plan: SchoolPlan; school: string; loading: boolean }) {
   const anyIndoors = plan.rows.some((r) => r.action === "indoors");
-  const mood: Mood = plan.changes === 0 ? "happy" : anyIndoors ? "masked" : worstFinal >= 1 ? "careful" : "happy";
 
   const markers: Marker[] = plan.rows
     .filter((r) => r.action !== "indoors")
@@ -201,46 +198,6 @@ function SchoolResult({ plan, place, school, loading }: {
 
   return (
     <div className={planner.stack} data-loading={loading || undefined}>
-      <section className={styles.summary}>
-        <Chiku mood={mood} size={150} />
-        <div className={styles.summaryText}>
-          <p className={ui.eyebrow}>
-            {plan.day === "today" ? "Today" : "Tomorrow"}, {prettyDate(plan.date)} · {place.name}
-          </p>
-          <h2>
-            {plan.changes === 0
-              ? "All outdoor periods look fine as planned."
-              : `${plan.changes} of ${n} outdoor period${n > 1 ? "s" : ""} need${plan.changes === 1 ? "s" : ""} a change.`}
-          </h2>
-          <div className={styles.stats}>
-            {plan.saved_pct > 0 && (
-              <div>
-                <b>{plan.saved_pct}%</b>
-                <span>less pollution breathed per child</span>
-              </div>
-            )}
-            {pmSavedSchoolMg >= 0.1 && (
-              <div>
-                <b>{nf.format(Math.round(pmSavedSchoolMg * 10) / 10)} mg</b>
-                <span>of PM2.5 kept out of {nf.format(plan.students)} pairs of lungs</span>
-              </div>
-            )}
-            {plan.cooler_moves > 0 && (
-              <div>
-                <b>{plan.cooler_moves}</b>
-                <span>period{plan.cooler_moves > 1 ? "s" : ""} moved out of the heat</span>
-              </div>
-            )}
-            <div>
-              <b>{plan.day_aqi.peak}</b>
-              <span>
-                peak AQI ({plan.day_aqi.peak_cat}, {plan.day_aqi.dominant})
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className={ui.card}>
         <h3 className={ui.cardTitle}>Revised timetable</h3>
         <p className={ui.cardSub}>No two periods overlap. Fixed periods stay put but may go indoors.</p>
