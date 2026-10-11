@@ -1,6 +1,6 @@
-# Bahar Khelo? 🐦
+# Chiku.AI 🐦
 
-**Can the kids play outside today?** Bahar Khelo turns the hourly air-quality and heat forecast for your neighbourhood into one answer: the safest time for a child to be outdoors.
+**Can the kids play outside today?** Chiku.AI turns the hourly air-quality and heat forecast for your neighbourhood into one answer: the safest time for a child to be outdoors.
 
 Built for Environmental Hacks (Bharat Builds Tour), **Air** track.
 
@@ -56,7 +56,7 @@ Without an API key, notes fall back to a template and everything else works the 
 
 ```
 api/                 Python, FastAPI
-  baharkhelo/
+  chiku/
     data.py          Open-Meteo client (CAMS air quality + weather), cached
     aqi.py           CPCB AQI and averaging
     heat.py          wet-bulb, WBGT, heat flags
@@ -111,4 +111,4 @@ cd api; ..\.venv\Scripts\python -m pytest
 - Breathing rates and daily inhalation: US EPA, Exposure Factors Handbook (2011)
 - Lung budget reference: WHO Global Air Quality Guidelines (2021)
 
-*Bahar Khelo gives guidance, not medical advice.*
+*Chiku.AI gives guidance, not medical advice.*

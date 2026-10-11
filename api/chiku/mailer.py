@@ -39,7 +39,7 @@ def send_report(to: list[str], subject: str, body: str, pdf: bytes, filename: st
         raise MailError("Email isn't set up on this server")
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"] = f"Bahar Khelo <{sender}>"
+    msg["From"] = f"Chiku.AI <{sender}>"
     msg["To"] = ", ".join(to)
     msg.set_content(body)
     msg.add_attachment(pdf, maintype="application", subtype="pdf", filename=filename)

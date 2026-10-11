@@ -34,7 +34,7 @@ interface Props {
 }
 
 const HEADLINE = [
-  (n: string) => `Bahar khelo! ${cap(n)} can go out`,
+  (n: string) => `Good news! ${cap(n)} can go out`,
   (n: string) => `${cap(n)} can go, but gently`,
   (n: string) => `Keep it short for ${n}`,
   () => "Better to stay in today",

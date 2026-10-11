@@ -4,9 +4,9 @@ import home from "../page.module.css";
 import styles from "./how.module.css";
 
 export const metadata: Metadata = {
-  title: "How it works | Bahar Khelo",
+  title: "How it works | Chiku.AI",
   description:
-    "The lung budget model behind Bahar Khelo: India AQI, WHO-relative dose, heat-driven breathing, forecast uncertainty, and where AI is and isn't used.",
+    "The lung budget model behind Chiku.AI: India AQI, WHO-relative dose, heat-driven breathing, forecast uncertainty, and where AI is and isn't used.",
 };
 
 const PIPELINE = [
@@ -65,7 +65,7 @@ export default function HowItWorks() {
           <p className={styles.kicker}>The core idea</p>
           <h2>A lung budget, not just an AQI number</h2>
           <p>
-            AQI tells you how dirty the air is. It doesn&apos;t tell you how much of it ends up in a child. Bahar Khelo
+            AQI tells you how dirty the air is. It doesn&apos;t tell you how much of it ends up in a child. Chiku.AI
             gives every child a daily <b>lung budget</b>: the pollution they would inhale in a full day of air at the
             WHO 2021 guideline. Each outing spends part of it.
           </p>
@@ -164,7 +164,7 @@ budget = spend ÷ daily inhalation volume × 100%`}
               The heat-breathing slope and the uncertainty terms are reasoned approximations, not fitted to Indian
               children. They are easy to recalibrate as data comes in.
             </li>
-            <li>Bahar Khelo gives guidance, not medical advice. Symptoms always beat forecasts.</li>
+            <li>Chiku.AI gives guidance, not medical advice. Symptoms always beat forecasts.</li>
           </ul>
         </div>
       </section>

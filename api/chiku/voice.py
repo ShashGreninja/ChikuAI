@@ -33,9 +33,9 @@ MINS = {"1": 30, "2": 60, "3": 90, "4": 120}
 
 T = {
     "greet": {
-        "en": "Namaste! This is Chiku from Bahar Khelo. I'll ask a few quick questions, then tell you the "
+        "en": "Namaste! This is Chiku, your outdoor air helper. I'll ask a few quick questions, then tell you the "
               "safest time for your child to play outside.",
-        "hi": "नमस्ते! मैं बाहर खेलो से चीकू बोल रहा हूँ। कुछ छोटे सवाल पूछूँगा, फिर बताऊँगा कि आपका बच्चा "
+        "hi": "नमस्ते! मैं चीकू बोल रहा हूँ, बाहर खेलने का आपका साथी। कुछ छोटे सवाल पूछूँगा, फिर बताऊँगा कि आपका बच्चा "
               "बाहर कब सबसे सुरक्षित खेल सकता है।",
     },
     "city": {
@@ -83,7 +83,7 @@ T = {
         "en": "Sorry, I can't take questions on this line right now.",
         "hi": "माफ़ कीजिए, अभी इस लाइन पर सवाल नहीं ले पा रहा हूँ।",
     },
-    "bye": {"en": "Thank you for calling Bahar Khelo. Stay safe!", "hi": "बाहर खेलो से बात करने के लिए धन्यवाद। ध्यान रखिए!"},
+    "bye": {"en": "Thank you for talking to Chiku. Stay safe!", "hi": "चीकू से बात करने के लिए धन्यवाद। ध्यान रखिए!"},
     "error": {
         "en": "Sorry, I couldn't get the forecast just now. Please try again in a little while, or use the website.",
         "hi": "माफ़ कीजिए, अभी मौसम की जानकारी नहीं मिल पाई। थोड़ी देर बाद फिर कोशिश कीजिए, या वेबसाइट देखिए।",

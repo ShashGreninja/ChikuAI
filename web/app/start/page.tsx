@@ -6,7 +6,7 @@ import Scene from "@/components/Scene";
 import styles from "./start.module.css";
 
 export const metadata: Metadata = {
-  title: "Get started | Bahar Khelo",
+  title: "Get started | Chiku.AI",
   description: "Plan outdoor time for your child, or re-plan your school's outdoor periods around the air and heat.",
 };
 

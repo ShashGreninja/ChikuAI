@@ -1,4 +1,4 @@
-"""Bahar Khelo API.  Run:  python main.py   ->  http://127.0.0.1:8000/docs
+"""Chiku.AI API.  Run:  python main.py   ->  http://127.0.0.1:8000/docs
 
 The Next.js app in ../web proxies /api/* to this server.
 """
@@ -23,7 +23,7 @@ from chiku import agent, data, mailer, phone, planner, report, school, voice  # 
 from chiku.exposure import Profile  # noqa: E402
 
 log = logging.getLogger("chiku")
-app = FastAPI(title="Bahar Khelo API", version="2.0")
+app = FastAPI(title="Chiku.AI API", version="2.0")
 
 Day = Literal["today", "tomorrow"]
 Age = Literal["3-5", "6-10", "11-15"]
@@ -99,7 +99,7 @@ def parent_report(req: ParentReportRequest):
     plan = req.run()
     name = (req.name or "").strip() or None
     pdf = report.parent_pdf(plan, req.place, name, req.note)
-    return _pdf(pdf, f"bahar-khelo-{report.slug(name or 'plan')}-{plan['date']}.pdf")
+    return _pdf(pdf, f"chiku-ai-{report.slug(name or 'plan')}-{plan['date']}.pdf")
 
 
 class IntakeRequest(BaseModel):
@@ -166,7 +166,7 @@ class BulletinRequest(SchoolDayRequest):
 def _bulletin(req: BulletinRequest) -> tuple[bytes, str, dict]:
     day = req.run()
     pdf = report.bulletin_pdf(day, req.place, req.school_name)
-    return pdf, f"bahar-khelo-{report.slug(req.school_name)}-{day['date']}.pdf", day
+    return pdf, f"chiku-ai-{report.slug(req.school_name)}-{day['date']}.pdf", day
 
 
 @app.post("/api/school/bulletin")
@@ -198,7 +198,7 @@ def school_bulletin_email(req: BulletinEmailRequest, request: Request):
     try:
         mailer.send_report(
             to, f"Outdoor plan for {req.school_name}, {report.pretty_date(day['date'])}",
-            f"{req.message}\n\nThe full bulletin is attached.\n\nSent with Bahar Khelo.", pdf, filename)
+            f"{req.message}\n\nThe full bulletin is attached.\n\nSent with Chiku.AI.", pdf, filename)
     except mailer.MailError as e:
         log.warning("email failed: %s", e)
         raise HTTPException(502, "The email couldn't be sent. Download the bulletin and attach it instead.") from e

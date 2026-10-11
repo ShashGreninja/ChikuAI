@@ -3,7 +3,7 @@ import CallChiku from "@/components/CallChiku";
 import ParentExperience from "@/components/ParentExperience";
 
 export const metadata: Metadata = {
-  title: "For parents | Bahar Khelo",
+  title: "For parents | Chiku.AI",
   description: "Answer a few questions and Chiku finds the safest time for your child to play outside, with a checklist.",
 };
 

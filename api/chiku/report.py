@@ -135,7 +135,7 @@ class ChikuMark(Flowable):
 
 
 def _header(title: str, sub: str) -> Table:
-    t = Table([[ChikuMark(), [Paragraph("BAHAR KHELO", S["eyebrow"]), Paragraph(esc(title), S["h1"]),
+    t = Table([[ChikuMark(), [Paragraph("CHIKU.AI", S["eyebrow"]), Paragraph(esc(title), S["h1"]),
                               Paragraph(esc(sub), S["muted"])]]],
               colWidths=[26 * mm, None])
     t.setStyle(TableStyle([
@@ -213,7 +213,7 @@ def _footer(canvas, doc):
 def _build(story: list, title: str, top: float = 16 * mm) -> bytes:
     buf = io.BytesIO()
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,
-                            topMargin=top, bottomMargin=16 * mm, title=clean(title), author="Bahar Khelo")
+                            topMargin=top, bottomMargin=16 * mm, title=clean(title), author="Chiku.AI")
     doc.build(story, onFirstPage=_footer, onLaterPages=_footer)
     return buf.getvalue()
 
@@ -297,7 +297,7 @@ def parent_pdf(plan: dict, place: str, name: str | None, note: str | None = None
                         "pollution allowance, a full day at the WHO guideline, that the outing uses.", S["small"]),
               Spacer(1, 4),
               _hour_table(plan["hours"], marks=marks)]
-    return _build(story, f"Bahar Khelo plan for {who}", top=12 * mm)
+    return _build(story, f"Chiku.AI plan for {who}", top=12 * mm)
 
 
 # ------------------------------------------------------------------ school bulletin
@@ -376,7 +376,7 @@ def bulletin_pdf(day: dict, place: str, school: str) -> bytes:
     story += [Paragraph("The school day, hour by hour", S["h2"]),
               _hour_table(day["hours"], start=max(6, day["school_hours"]["start"] // 60 - 1),
                           end=min(20, -(-day["school_hours"]["end"] // 60) + 1))]
-    return _build(story, f"Bahar Khelo bulletin for {school}", top=12 * mm)
+    return _build(story, f"Chiku.AI bulletin for {school}", top=12 * mm)
 
 
 def slug(text: str) -> str:

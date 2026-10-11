@@ -17,7 +17,7 @@ const mukta = Mukta({
 });
 
 export const metadata: Metadata = {
-  title: "Bahar Khelo | When can kids play outside?",
+  title: "Chiku.AI | When can kids play outside?",
   description:
     "Chiku the sparrow reads the hourly air quality and heat forecast for your neighbourhood and tells Indian parents and schools the safest time for children to play outdoors.",
 };

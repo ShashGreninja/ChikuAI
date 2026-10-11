@@ -200,14 +200,14 @@ export function staffMessage(day: SchoolDay, school: string, lang: "en" | "hi"):
   const a = day.day_aqi;
   if (lang === "hi") {
     return [
-      `🐦 बाहर खेलो | ${school} | ${date}`,
+      `🐦 Chiku.AI | ${school} | ${date}`,
       day.advisory ? "सरकारी एडवाइज़री लागू है: आज सभी गतिविधियाँ अंदर।" : `हवा: AQI ${a.peak} तक।`,
       ...lines,
       ...(swaps.length ? ["सुझाए गए बदलाव:", ...swaps] : []),
     ].join("\n");
   }
   return [
-    `🐦 Bahar Khelo | ${school} | ${date}`,
+    `🐦 Chiku.AI | ${school} | ${date}`,
     day.advisory ? "Government advisory in force: all outdoor activity indoors today." : `Air: AQI up to ${a.peak} (${a.peak_cat}, mostly ${a.dominant}).`,
     ...lines,
     ...(swaps.length ? ["Suggested swaps:", ...swaps] : []),

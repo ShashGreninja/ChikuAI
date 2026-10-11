@@ -38,6 +38,6 @@ run:
   # The instance role needs ssm:GetParameters on both parameters.
   # secrets:
   #   - name: TWILIO_ACCOUNT_SID
-  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/bahar-khelo/twilio-account-sid"
+  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/chiku-ai/twilio-account-sid"
   #   - name: TWILIO_AUTH_TOKEN
-  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/bahar-khelo/twilio-auth-token"
+  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/chiku-ai/twilio-auth-token"

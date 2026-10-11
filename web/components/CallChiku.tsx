@@ -96,7 +96,7 @@ export default function CallChiku() {
 
             <label className={styles.consent}>
               <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-              <span>I agree to get one automated call from Bahar Khelo on this number.</span>
+              <span>I agree to get one automated call from Chiku.AI on this number.</span>
             </label>
 
             <div className={styles.row}>

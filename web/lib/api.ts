@@ -14,7 +14,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     res = await fetch(path, { ...init, headers: { "Content-Type": "application/json", ...init?.headers } });
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") throw e;
-    throw new ApiError("Can't reach the Bahar Khelo server. Is the API running?", 0);
+    throw new ApiError("Can't reach the Chiku.AI server. Is the API running?", 0);
   }
   if (!res.ok) {
     let detail = `Something went wrong (${res.status})`;
@@ -90,7 +90,7 @@ async function download(path: string, body: unknown, fallbackName: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   }).catch(() => {
-    throw new ApiError("Can't reach the Bahar Khelo server.", 0);
+    throw new ApiError("Can't reach the Chiku.AI server.", 0);
   });
   if (!res.ok) throw new ApiError(`Couldn't make the report (${res.status})`, res.status);
   const name = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ?? fallbackName;
@@ -103,7 +103,7 @@ async function download(path: string, body: unknown, fallbackName: string) {
 }
 
 export function downloadParentReport(q: ParentQuery, place: string, name: string | null, note: string | null) {
-  return download("/api/report/parent", { ...q, place, name, note }, "bahar-khelo-plan.pdf");
+  return download("/api/report/parent", { ...q, place, name, note }, "chiku-ai-plan.pdf");
 }
 
 // ---------------------------------------------------------------- Schools
@@ -129,7 +129,7 @@ export interface BulletinQuery extends SchoolDayQuery {
 }
 
 export function downloadBulletin(q: BulletinQuery) {
-  return download("/api/school/bulletin", q, "bahar-khelo-bulletin.pdf");
+  return download("/api/school/bulletin", q, "chiku-ai-bulletin.pdf");
 }
 
 export function emailBulletin(q: BulletinQuery, to: string[], message: string) {
