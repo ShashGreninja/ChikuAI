@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import CallButton from "./CallButton";
 import Chiku from "./Chiku";
 import styles from "./SiteHeader.module.css";
 
@@ -26,13 +27,16 @@ export default function SiteHeader() {
           <span className={styles.hi} lang="hi">बाहर खेलने का सही समय</span>
         </span>
       </Link>
-      <nav className={styles.nav} aria-label="Main">
-        {LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className={styles.link} aria-current={path === l.href ? "page" : undefined}>
-            {l.label}
-          </Link>
-        ))}
-      </nav>
+      <div className={styles.right}>
+        <nav className={styles.nav} aria-label="Main">
+          {LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className={styles.link} aria-current={path === l.href ? "page" : undefined}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+        <CallButton />
+      </div>
     </header>
   );
 }

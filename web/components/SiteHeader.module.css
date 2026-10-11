@@ -53,6 +53,13 @@
   margin-top: 3px;
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .nav {
   display: flex;
   gap: 6px;
@@ -79,12 +86,18 @@
 }
 
 @media (max-width: 560px) {
-  .nav {
+  .right {
     width: 100%;
-    gap: 2px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+  .nav {
+    gap: 0;
+    flex-wrap: nowrap;
   }
   .link {
-    font-size: 0.9rem;
-    padding: 5px 10px 3px;
+    font-size: 0.85rem;
+    padding: 5px 8px 3px;
+    white-space: nowrap;
   }
 }
