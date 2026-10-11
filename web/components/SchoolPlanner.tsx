@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { getSchoolPlan } from "@/lib/api";
+import { downloadSchoolReport, getSchoolPlan, type SchoolQuery, type SchoolReportQuery } from "@/lib/api";
 import { fromTimeInput, toTimeInput } from "@/lib/format";
 import { schoolCircular } from "@/lib/messages";
 import { useStored } from "@/lib/useStored";
 import type { AgeGroup, Day, Place, SchoolPlan, SchoolRow, SchoolSlot } from "@/lib/types";
 import DayStrip, { type Marker } from "./DayStrip";
+import DownloadButton from "./DownloadButton";
+import EmailReport from "./EmailReport";
 import PlaceSearch from "./PlaceSearch";
 import Segmented from "./Segmented";
 import ShareBox from "./ShareBox";
@@ -58,6 +60,8 @@ export default function SchoolPlanner({ onResult, onBusy }: {
   const [slots, setSlots] = useState<SchoolSlot[]>(DEFAULT_SLOTS);
 
   const [plan, setPlan] = useState<SchoolPlan | null>(null);
+  // the exact inputs behind the plan on screen, so the PDF matches even if the form changes
+  const [ran, setRan] = useState<{ query: SchoolQuery; place: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,10 +75,12 @@ export default function SchoolPlanner({ onResult, onBusy }: {
     onBusy(true);
     setError(null);
     try {
-      const p = await getSchoolPlan({
+      const q: SchoolQuery = {
         lat: place.lat, lon: place.lon, students, age, day, school_start: start, school_end: end, slots,
-      });
+      };
+      const p = await getSchoolPlan(q);
       setPlan(p);
+      setRan({ query: q, place: place.name });
       onResult({ plan: p, place });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -178,14 +184,25 @@ export default function SchoolPlanner({ onResult, onBusy }: {
           </div>
         )}
 
-        {plan && <SchoolResult plan={plan} school={school} loading={loading} />}
+        {plan && ran && (
+          <SchoolResult plan={plan} school={school || "our school"} loading={loading} query={ran.query} place={ran.place} />
+        )}
       </div>
     </div>
   );
 }
 
-function SchoolResult({ plan, school, loading }: { plan: SchoolPlan; school: string; loading: boolean }) {
+function SchoolResult({ plan, school, loading, query, place }: {
+  plan: SchoolPlan;
+  school: string;
+  loading: boolean;
+  query: SchoolQuery;
+  place: string;
+}) {
   const anyIndoors = plan.rows.some((r) => r.action === "indoors");
+  const reportQuery: SchoolReportQuery = {
+    ...query, place, school_name: school, circular: schoolCircular(plan, school, "en"),
+  };
 
   const markers: Marker[] = plan.rows
     .filter((r) => r.action !== "indoors")
@@ -261,10 +278,13 @@ function SchoolResult({ plan, school, loading }: { plan: SchoolPlan; school: str
       </section>
 
       <ShareBox
-        title="Circular for parents"
-        sub="Paste into the class WhatsApp groups or the school app."
-        build={(lang) => schoolCircular(plan, school || "our school", lang)}
-      />
+        title="Share with parents and staff"
+        sub="Paste the circular into class WhatsApp groups, download the full report, or email it."
+        build={(lang) => schoolCircular(plan, school, lang)}
+        actions={<DownloadButton make={() => downloadSchoolReport(reportQuery)} label="Download PDF" />}
+      >
+        <EmailReport query={reportQuery} />
+      </ShareBox>
     </div>
   );
 }
