@@ -1,0 +1,85 @@
+.fig {
+  margin: 0;
+}
+
+.rows {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.name b {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+}
+
+.name span {
+  color: var(--ink-3);
+  font-size: 0.82rem;
+}
+
+.track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+}
+
+.bar {
+  height: 100%;
+  background: #c9bba3;
+  border-radius: 0 6px 6px 0;
+  border: 2px solid var(--line);
+  border-left-width: 3px;
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.bar[data-hi] {
+  background: var(--leaf);
+}
+
+.value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 10;
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.cap {
+  margin-top: 12px;
+  color: var(--ink-3);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 520px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
