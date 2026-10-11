@@ -19,7 +19,7 @@ import uvicorn  # noqa: E402
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
-from baharkhelo import agent, data, mailer, phone, planner, report, voice  # noqa: E402
+from baharkhelo import agent, data, mailer, phone, planner, report, school, voice  # noqa: E402
 from baharkhelo.exposure import Profile  # noqa: E402
 
 log = logging.getLogger("baharkhelo")
@@ -117,61 +117,74 @@ def intake(req: IntakeRequest):
         raise HTTPException(502, "Chiku couldn't read that. Try the buttons instead.") from e
 
 
-class Slot(BaseModel):
-    name: str = Field(max_length=40)
-    activity: Literal["pe", "recess", "assembly", "sports", "walk"]
+# ------------------------------------------------------------------ School plan
+
+Kind = Literal["pe", "sports", "assembly", "recess", "walk"]
+
+
+class SchoolClass(BaseModel):
+    id: str = Field(max_length=20)
+    name: str = Field(max_length=20)
+    age: Age = "6-10"
+    asthma: int = Field(0, ge=0, le=60)
+
+
+class Period(BaseModel):
+    id: str = Field(max_length=40)
+    class_id: str = Field(max_length=20)  # a class id, or "all"
+    kind: Kind
     start: int = Field(ge=5 * 60, le=19 * 60)
-    minutes: int = Field(ge=10, le=120)
-    movable: bool = True
+    minutes: int = Field(ge=10, le=180)
 
 
-class SchoolRequest(BaseModel):
+class SchoolDayRequest(BaseModel):
     lat: float = Field(ge=6, le=38)
     lon: float = Field(ge=68, le=98)
-    students: int = Field(500, ge=1, le=20000)
-    age: Age = "6-10"
-    day: Day = "tomorrow"
+    day: Day = "today"
+    advisory: bool = False
     school_start: int = Field(8 * 60, ge=5 * 60, le=12 * 60)
     school_end: int = Field(14 * 60, ge=10 * 60, le=19 * 60)
-    slots: list[Slot] = Field(min_length=1, max_length=8)
+    classes: list[SchoolClass] = Field(min_length=1, max_length=80)
+    periods: list[Period] = Field(min_length=1, max_length=120)
+
+    def run(self) -> dict:
+        return school.check_day(_forecast(self.lat, self.lon), self.day, [c.model_dump() for c in self.classes],
+                                [p.model_dump() for p in self.periods], self.school_start, self.school_end,
+                                self.advisory)
 
 
-@app.post("/api/school")
-def school(req: SchoolRequest):
-    try:
-        return planner.plan_school(_forecast(req.lat, req.lon), [s.model_dump() for s in req.slots],
-                                   req.students, req.day, req.age, req.school_start, req.school_end)
-    except ValueError as e:
-        raise HTTPException(422, str(e)) from e
+@app.post("/api/school/day")
+def school_day(req: SchoolDayRequest):
+    return req.run()
 
 
-class SchoolReportRequest(SchoolRequest):
+class BulletinRequest(SchoolDayRequest):
     place: str = Field(max_length=80)
     school_name: str = Field("our school", max_length=60)
-    circular: str = Field("", max_length=3000)
 
 
-def _school_pdf(req: SchoolReportRequest) -> tuple[bytes, str, dict]:
-    plan = school(req)
-    pdf = report.school_pdf(plan, req.place, req.school_name, req.circular)
-    return pdf, f"bahar-khelo-{report.slug(req.school_name)}-{plan['date']}.pdf", plan
+def _bulletin(req: BulletinRequest) -> tuple[bytes, str, dict]:
+    day = req.run()
+    pdf = report.bulletin_pdf(day, req.place, req.school_name)
+    return pdf, f"bahar-khelo-{report.slug(req.school_name)}-{day['date']}.pdf", day
 
 
-@app.post("/api/report/school")
-def school_report(req: SchoolReportRequest):
-    pdf, filename, _ = _school_pdf(req)
+@app.post("/api/school/bulletin")
+def school_bulletin(req: BulletinRequest):
+    pdf, filename, _ = _bulletin(req)
     return _pdf(pdf, filename)
 
 
 EMAIL_RE = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
 
-class SchoolEmailRequest(SchoolReportRequest):
+class BulletinEmailRequest(BulletinRequest):
     to: list[str] = Field(min_length=1, max_length=mailer.MAX_RECIPIENTS)
+    message: str = Field("", max_length=3000)
 
 
-@app.post("/api/report/school/email")
-def school_email(req: SchoolEmailRequest, request: Request):
+@app.post("/api/school/bulletin/email")
+def school_bulletin_email(req: BulletinEmailRequest, request: Request):
     import re
 
     to = [t.strip() for t in req.to if t.strip()]
@@ -181,15 +194,34 @@ def school_email(req: SchoolEmailRequest, request: Request):
         raise HTTPException(503, "Email isn't set up on this server.")
     if not mailer.allow(request.client.host if request.client else "unknown"):
         raise HTTPException(429, "That's a lot of emails. Try again in an hour.")
-    pdf, filename, plan = _school_pdf(req)
+    pdf, filename, day = _bulletin(req)
     try:
         mailer.send_report(
-            to, f"Outdoor timetable for {req.school_name}, {report.pretty_date(plan['date'])}",
-            f"{req.circular}\n\nThe full report is attached.\n\nSent with Bahar Khelo.", pdf, filename)
+            to, f"Outdoor plan for {req.school_name}, {report.pretty_date(day['date'])}",
+            f"{req.message}\n\nThe full bulletin is attached.\n\nSent with Bahar Khelo.", pdf, filename)
     except mailer.MailError as e:
         log.warning("email failed: %s", e)
-        raise HTTPException(502, "The email couldn't be sent. Download the report and attach it instead.") from e
+        raise HTTPException(502, "The email couldn't be sent. Download the bulletin and attach it instead.") from e
     return {"sent": len(to)}
+
+
+class EventRequest(BaseModel):
+    lat: float = Field(ge=6, le=38)
+    lon: float = Field(ge=68, le=98)
+    age: Age = "6-10"
+    kind: Kind = "sports"
+    minutes: int = Field(60, ge=15, le=240)
+    earliest: int = Field(7 * 60, ge=6 * 60, le=19 * 60)
+    latest: int = Field(17 * 60, ge=7 * 60, le=20 * 60)
+
+
+@app.post("/api/school/events")
+def school_events(req: EventRequest):
+    if req.latest - req.earliest < req.minutes:
+        raise HTTPException(422, "The time range is shorter than the event.")
+    return school.find_event_slots(_forecast(req.lat, req.lon), req.age, req.kind, req.minutes,
+                                   req.earliest, req.latest)
+
 
 
 class CallRequest(BaseModel):

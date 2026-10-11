@@ -300,82 +300,83 @@ def parent_pdf(plan: dict, place: str, name: str | None, note: str | None = None
     return _build(story, f"Bahar Khelo plan for {who}", top=12 * mm)
 
 
-# ------------------------------------------------------------------ school
+# ------------------------------------------------------------------ school bulletin
 
-ACTION_TEXT = {"keep": "Keep", "move": "Move", "indoors": "Indoors", "easy": "Go easy"}
-REASON_TEXT = {"cooler": "cooler", "cleaner": "cleaner air", "safer": "safer", "air": "poor air",
-               "heat": "too hot", "clear": "all clear"}
+DRIVER_TEXT = {"air": "air", "heat": "heat", "advisory": "govt. advisory"}
 
 
-def school_pdf(plan: dict, place: str, school: str, circular: str) -> bytes:
-    day_word = "Today" if plan["day"] == "today" else "Tomorrow"
-    n = len(plan["rows"])
-    pm_before = sum(r["current"]["pm25_ug"] for r in plan["rows"])
-    pm_after = sum(r["final"]["pm25_ug"] for r in plan["rows"])
-    saved_mg = max(0.0, (pm_before - pm_after) * plan["students"] / 1000)
-
+def bulletin_pdf(day: dict, place: str, school: str) -> bytes:
+    """The morning bulletin: one page for the staff room notice board."""
+    day_word = {"today": "Today", "tomorrow": "Tomorrow"}.get(day["day"], "")
+    periods = day["periods"]
     story: list = [
-        _header(f"Outdoor timetable for {school}",
-                f"{place} · {day_word}, {pretty_date(plan['date'])} · {plan['students']} students, "
-                f"ages {plan['age']} · school hours {plan['school_hours']['label']}"),
-        Spacer(1, 10),
-        Paragraph("All outdoor periods look fine as planned." if plan["changes"] == 0 else
-                  f"{plan['changes']} of {n} outdoor periods need a change.", S["big"]),
-        Spacer(1, 6),
+        _header(f"Outdoor plan: {school}",
+                f"{place} · {day_word + ', ' if day_word else ''}{pretty_date(day['date'])} · "
+                f"school hours {day['school_hours']['label']}"),
+        Spacer(1, 8),
     ]
-    stats = [("Peak AQI", str(plan["day_aqi"]["peak"]),
-              f"{plan['day_aqi']['peak_cat']}, mostly {plan['day_aqi']['dominant']}")]
-    if plan["saved_pct"] > 0:
-        stats.append(("Lung budget saved", f"{plan['saved_pct']}%", "per child, across all periods"))
-    if saved_mg >= 0.1:
-        stats.append(("PM2.5 kept out", f"{saved_mg:.1f} mg", f"across {plan['students']} students"))
-    if plan["cooler_moves"]:
-        stats.append(("Out of the heat", str(plan["cooler_moves"]), "periods moved to a cooler slot"))
-    story += [_stats(stats), Paragraph("Revised timetable", S["h2"])]
+    if day["advisory"]:
+        banner = Table([[Paragraph("<b>Government air quality advisory in force.</b> All outdoor activity moves "
+                                   "indoors today.", S["body"])]], colWidths=[None])
+        banner.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), STATUS_TINT["stop"]),
+                                    ("LINEBEFORE", (0, 0), (0, 0), 4, STATUS["stop"]),
+                                    ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]))
+        story += [banner, Spacer(1, 6)]
 
-    head = ["Period", "Activity", "Planned", "", "Now", "Action", "Why"]
+    c = day["counts"]
+    a = day["day_aqi"]
+    story += [_stats([
+        ("Outdoor as usual", str(c.get("go", 0)), "periods"),
+        ("Adjusted", str(len(periods) - c.get("go", 0)), "periods with a change of activity"),
+        ("Class swaps", str(len(day["swaps"])), "suggested below"),
+        ("Peak AQI", str(a.get("peak", "-")), f"{a.get('peak_cat', '')}, mostly {a.get('dominant', '')}"),
+    ]), Paragraph("Period by period", S["h2"])]
+
+    head = ["Time", "Class", "Period", "Status", "Do this", "Why"]
     rows = [[Paragraph(h, S["cellb"]) for h in head]]
     style = [("BACKGROUND", (0, 0), (-1, 0), PAPER2), ("LINEBELOW", (0, 0), (-1, 0), 1, INK),
              ("LINEBELOW", (0, 1), (-1, -1), 0.4, HAIR), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-             ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]
-    for r in plan["rows"]:
+             ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3)]
+    for p in periods:
         i = len(rows)
-        cur_key = r["current"]["status"]["key"]
-        new = "Indoors" if r["action"] == "indoors" else r["final"]["start_label"]
-        reasons = ", ".join(REASON_TEXT.get(x, x) for x in r["reasons"] if x != "clear") or "-"
+        key = p["status"]["key"]
+        todo = f"<b>{esc(p['action'])}</b>"
+        if p.get("asthma"):
+            todo += (f"<br/><font color='#5c4a38'>{p['asthma']['count']} with asthma: "
+                     f"{esc(p['asthma']['action'].lower())}</font>")
+        why = ", ".join(DRIVER_TEXT.get(d, d) for d in p["drivers"]) or "-"
         rows.append([
-            Paragraph(f"<b>{esc(r['name'])}</b>{'<br/><font color=#8a7763>fixed</font>' if not r['movable'] else ''}",
-                      S["cell"]),
-            Paragraph(f"{esc(r['activity'])}, {r['minutes']} min", S["cell"]),
-            Paragraph(f"{r['current']['start_label']}<br/><font color=#8a7763>{STATUS_LABEL[cur_key]}</font>",
-                      S["cell"]),
-            Paragraph("->", S["cell"]),
-            Paragraph(f"<b>{new}</b>", S["cell"]),
-            Paragraph(f"<b>{ACTION_TEXT[r['action']]}</b>", S["cell"]),
-            Paragraph(esc(reasons), S["cell"]),
+            Paragraph(f"<b>{esc(p['label'])}</b>", S["cell"]),
+            Paragraph(esc(p["class_name"]), S["cell"]),
+            Paragraph(esc(p["kind_label"]), S["cell"]),
+            Paragraph(STATUS_LABEL[key], S["cell"]),
+            Paragraph(todo, S["cell"]),
+            Paragraph(f"{esc(why)}<br/><font color='#8a7763'>AQI {p['aqi']}, WBGT {p['wbgt']}</font>", S["cell"]),
         ])
-        style.append(("LINEBEFORE", (2, i), (2, i), 3, STATUS[cur_key]))
-        if r["action"] in ("move", "indoors"):
-            style.append(("BACKGROUND", (4, i), (5, i), MARIGOLD_SOFT))
-    t = Table(rows, colWidths=[34 * mm, 34 * mm, 22 * mm, 7 * mm, 20 * mm, 18 * mm, None], repeatRows=1)
+        style += [("BACKGROUND", (3, i), (3, i), STATUS_TINT[key]), ("LINEBEFORE", (3, i), (3, i), 3, STATUS[key])]
+    t = Table(rows, colWidths=[30 * mm, 22 * mm, 24 * mm, 22 * mm, None, 28 * mm], repeatRows=1)
     t.setStyle(TableStyle(style))
     story.append(t)
 
-    marks = {}
-    for r in plan["rows"]:
-        if r["action"] != "indoors":
-            marks.setdefault(r["final"]["start"] // 60, r["name"])
-    story += [Paragraph("The school day, hour by hour", S["h2"]),
-              _hour_table(plan["hours"], start=6, end=18, marks=marks)]
+    if day["swaps"]:
+        lines = []
+        for s in day["swaps"]:
+            lines.append(Paragraph(
+                f"<b>{esc(s['a']['class_name'])}</b> PE {esc(s['a']['from'])} &lt;-&gt; "
+                f"<b>{esc(s['b']['class_name'])}</b> PE {esc(s['b']['from'])}. "
+                f"{esc(s['a']['class_name'])}: {STATUS_LABEL[s['a']['before']['key']].lower()} -&gt; "
+                f"{STATUS_LABEL[s['a']['after']['key']].lower()}; {esc(s['b']['class_name'])}: "
+                f"{STATUS_LABEL[s['b']['before']['key']].lower()} -&gt; {STATUS_LABEL[s['b']['after']['key']].lower()}.",
+                S["body"]))
+        story += [KeepTogether([Paragraph("Suggested PE swaps", S["h2"]),
+                                Paragraph("The two classes trade PE slots (and the subjects in those slots). The ground "
+                                          "and PE teacher are used exactly as before.", S["small"]), Spacer(1, 3),
+                                *lines])]
 
-    story += [KeepTogether([
-        Paragraph("Circular for parents", S["h2"]),
-        Table([[Paragraph(esc(circular).replace("\n", "<br/>"), S["body"])]], colWidths=[None],
-              style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), PAPER), ("BOX", (0, 0), (-1, -1), 0.75, HAIR),
-                                ("LEFTPADDING", (0, 0), (-1, -1), 10), ("TOPPADDING", (0, 0), (-1, -1), 8),
-                                ("BOTTOMPADDING", (0, 0), (-1, -1), 8)])),
-    ])]
-    return _build(story, f"Bahar Khelo timetable for {school}")
+    story += [Paragraph("The school day, hour by hour", S["h2"]),
+              _hour_table(day["hours"], start=max(6, day["school_hours"]["start"] // 60 - 1),
+                          end=min(20, -(-day["school_hours"]["end"] // 60) + 1))]
+    return _build(story, f"Bahar Khelo bulletin for {school}", top=12 * mm)
 
 
 def slug(text: str) -> str:
