@@ -130,7 +130,7 @@ budget = spend ÷ daily inhalation volume × 100%`}
             <ul>
               <li>
                 <b>Listen.</b> &quot;My 7 yr old has mild asthma, cricket after school in Noida&quot; becomes the
-                planner&apos;s inputs (structured output from a Strands agent).
+                planner&apos;s inputs.
               </li>
               <li>
                 <b>Explain.</b> It writes Chiku&apos;s short note from the planner&apos;s numbers, in English or Hindi.
@@ -147,9 +147,6 @@ budget = spend ÷ daily inhalation volume × 100%`}
               <li>picks the time, sets a flag or estimates a pollution level;</li>
               <li>changes the lung budget or the checklist.</li>
             </ul>
-            <p className={styles.aiNote}>
-              No API key? Notes fall back to a template and everything else works the same.
-            </p>
           </div>
         </div>
       </section>
@@ -170,24 +167,6 @@ budget = spend ÷ daily inhalation volume × 100%`}
             <li>Bahar Khelo gives guidance, not medical advice. Symptoms always beat forecasts.</li>
           </ul>
         </div>
-      </section>
-
-      <section className={styles.stack}>
-        <h2>Built with</h2>
-        <ul>
-          <li>
-            <b>Strands Agents</b> (AWS open source): intake, Chiku&apos;s note and the Ask Chiku agent
-          </li>
-          <li>
-            <b>Python + FastAPI</b>: AQI, heat, lung budget, prevention and the planners, with unit tests
-          </li>
-          <li>
-            <b>Next.js</b>: the web app
-          </li>
-          <li>
-            <b>Open-Meteo</b>: free CAMS air-quality and weather forecasts
-          </li>
-        </ul>
       </section>
     </div>
   );
