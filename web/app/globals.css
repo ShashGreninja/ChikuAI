@@ -1,0 +1,107 @@
+:root {
+  /* paper & ink */
+  --paper: #fbf4e6;
+  --paper-2: #f5ead3;
+  --card: #fffdf8;
+  --ink: #2a1f14;
+  --ink-2: #5c4a38;
+  --ink-3: #8a7763;
+  --line: #2a1f14;
+  --hair: #e6d9bf;
+
+  /* brand */
+  --marigold: #f4a62a;
+  --marigold-soft: #fde7b8;
+  --leaf: #2f6b45;
+  --leaf-soft: #d7ead9;
+  --sky: #8ec5d6;
+  --sky-soft: #dcecf1;
+  --brick: #c4502e;
+
+  /* status (fixed, always paired with icon + label) */
+  --st-go: #0ca30c;
+  --st-caution: #fab219;
+  --st-limit: #ec835a;
+  --st-stop: #d03b3b;
+
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 3px 3px 0 var(--line);
+  --shadow-lg: 5px 5px 0 var(--line);
+
+  --font-display: var(--font-baloo), "Baloo 2", system-ui, sans-serif;
+  --font-body: var(--font-mukta), "Mukta", system-ui, sans-serif;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* faint ruled-notebook texture */
+  background-image: radial-gradient(var(--hair) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.1;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--marigold);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
