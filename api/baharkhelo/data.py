@@ -48,7 +48,9 @@ class Forecast:
     hours: list[Hour] = field(default_factory=list)
 
     def target(self, which: str) -> date:
-        return self.now.date() + timedelta(days=1 if which == "tomorrow" else 0)
+        """'today', 'tomorrow', or a day offset like '2' (the forecast covers three days)."""
+        offset = {"today": 0, "tomorrow": 1}.get(which)
+        return self.now.date() + timedelta(days=offset if offset is not None else int(which))
 
     def indices(self, which: str) -> list[int]:
         """Positions in `hours` that fall on `which` day (today/tomorrow), local time."""

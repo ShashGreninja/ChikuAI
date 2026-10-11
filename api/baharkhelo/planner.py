@@ -1,4 +1,4 @@
-"""Find the safest time for children to be outdoors, for a family or a whole school.
+"""Find the safest time for children to be outdoors.
 
 Decision model, in order:
   1. Flags. Every hour gets an air flag (CPCB AQI bands, stricter with asthma) and a heat
@@ -28,7 +28,6 @@ STATUS = (
 )
 
 DAY_START, DAY_END, STEP = 6 * 60, 20 * 60, 30  # outdoor hours for children, minutes
-INDOOR_RATIO = 0.6  # indoor/outdoor PM ratio typical of naturally ventilated Indian classrooms
 SPLIT_GAP = 120  # minutes between two halves of a split outing
 SPLIT_MIN_SAVING = 0.2  # only suggest a split if it saves at least 20% of the budget
 
@@ -110,8 +109,7 @@ class Window:
         }
 
 
-def evaluate(hours: dict[int, dict], p: Profile, start: int, minutes: int | None = None,
-             indoor: bool = False) -> Window | None:
+def evaluate(hours: dict[int, dict], p: Profile, start: int, minutes: int | None = None) -> Window | None:
     minutes = minutes or p.minutes
     lpm = p.vent * 1000
     allowance = budget.allowance_litres(p.age)
@@ -121,16 +119,14 @@ def evaluate(hours: dict[int, dict], p: Profile, start: int, minutes: int | None
         if h is None:
             return None
         used.append(h)
-        ratio = INDOOR_RATIO if indoor else 1.0
-        vx = 1.0 if indoor else h["vent_x"]
-        litres = lpm * vx * mins
-        spend += h["wf"] * ratio * litres
-        risk += h["wf"] * ratio * litres * (1 + h["u"])
-        pm += h["pm25"] * ratio * litres / 1000
-        strain = max(strain, 0.0 if indoor else h["strain"])
+        litres = lpm * h["vent_x"] * mins
+        spend += h["wf"] * litres
+        risk += h["wf"] * litres * (1 + h["u"])
+        pm += h["pm25"] * litres / 1000
+        strain = max(strain, h["strain"])
         rain = max(rain, h["rain"])
         u_sum += h["u"] * mins
-    level = 0 if indoor else max(h["level"] for h in used)
+    level = max(h["level"] for h in used)
     budget_pct = 100 * spend / allowance
     risk_pct = 100 * risk / allowance
     cost = risk_pct / 10 + strain + rain / 200
@@ -226,83 +222,6 @@ def plan_parent(fc: Forecast, p: Profile, day: str = "today", usual: int = 17 * 
         "prevention": prevention.suggestions(p, pick_pub, hour_list) if pick else [],
     }
     return plan
-
-
-PRIORITY = {"high": 0, "moderate": 1, "light": 2, "sedentary": 3}
-
-
-def plan_school(fc: Forecast, slots: list[dict], students: int = 500, day: str = "tomorrow",
-                age: str = "6-10", school_start: int = 8 * 60, school_end: int = 14 * 60) -> dict:
-    """slots: [{"name", "activity", "start" (minutes from midnight), "minutes", "movable"?}]"""
-    profiles = [Profile(age=age, activity=s["activity"], minutes=s["minutes"]) for s in slots]
-    hours_by_slot = [assess(fc, day, p) for p in profiles]
-    taken = {i: (s["start"], s["start"] + s["minutes"]) for i, s in enumerate(slots)}
-    order = sorted(range(len(slots)), key=lambda i: (PRIORITY[profiles[i].intensity], slots[i]["start"]))
-    earliest = school_start
-    if day == "today":  # never move a period into time that has already gone
-        earliest = max(school_start, _round_up(fc.now.hour * 60 + fc.now.minute))
-
-    rows: dict[int, dict] = {}
-    before = after = 0.0
-    for i in order:
-        s, p, hours = slots[i], profiles[i], hours_by_slot[i]
-        cur = evaluate(hours, p, s["start"])
-        if cur is None:
-            raise ValueError(f"{s['name']} is outside the forecast range")
-        others = [v for k, v in taken.items() if k != i]
-        movable = s.get("movable", True)
-        best = _best(candidates(hours, p, earliest, school_end, blocked=others)) if movable else None
-
-        if cur.level == 0:
-            action, final = "keep", cur
-        elif best and (best.level < cur.level or (best.level == cur.level and best.budget < 0.7 * cur.budget)):
-            action, final = "move", best
-        elif cur.level >= 2:
-            action = "indoors"
-            final = evaluate(hours, Profile(age=age, activity="assembly", minutes=s["minutes"]),
-                             s["start"], indoor=True)
-        else:
-            action, final = "easy", cur
-        taken[i] = (final.start, final.end)
-        before += cur.budget
-        after += final.budget
-        rows[i] = {
-            "name": s["name"], "activity": p.label, "minutes": s["minutes"], "movable": movable,
-            "action": action, "current": cur.public(), "final": final.public(),
-            "saved_pct": _pct_saved(final.budget, cur.budget),
-            "reasons": _reasons(cur, final, action),
-        }
-
-    base = Profile(age=age, activity="recess")
-    return {
-        "mode": "school", "day": day, "date": fc.target(day).isoformat(),
-        "timezone": fc.timezone, "students": students, "age": age,
-        "school_hours": {"start": school_start, "end": school_end,
-                         "label": f"{fmt(school_start)} to {fmt(school_end)}"},
-        "day_aqi": day_aqi(fc, day),
-        "hours": [_public_hour(h) for h in assess(fc, day, base).values()],
-        "rows": [rows[i] for i in range(len(slots))],
-        "changes": sum(1 for r in rows.values() if r["action"] != "keep"),
-        "cooler_moves": sum(1 for r in rows.values() if "cooler" in r["reasons"]),
-        "budget_before": round(before, 1), "budget_after": round(after, 1),
-        "saved_pct": _pct_saved(after, before),
-    }
-
-
-def _reasons(cur: Window, final: Window, action: str) -> list[str]:
-    """Why a slot was changed, in the words a teacher would use."""
-    air = max(h["air_level"] for h in cur.hours)
-    hot = max(h["heat_level"] for h in cur.hours)
-    if action == "keep":
-        return ["clear"]
-    if action in ("indoors", "easy"):
-        return [r for r, lvl in (("air", air), ("heat", hot)) if lvl == cur.level and lvl > 0]
-    out = []
-    if max(h["heat_level"] for h in final.hours) < hot:
-        out.append("cooler")
-    if final.budget < 0.9 * cur.budget:
-        out.append("cleaner")
-    return out or ["safer"]
 
 
 def day_aqi(fc: Forecast, day: str) -> dict:

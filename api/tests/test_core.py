@@ -98,19 +98,6 @@ def test_today_never_picks_the_past():
     assert plan["pick"]["start"] >= 14 * 60
 
 
-def test_school_moves_pe_and_never_double_books():
-    fc = make_forecast(lambda h: 25 if h < 10 else 130)
-    slots = [{"name": "Assembly", "activity": "assembly", "start": 8 * 60, "minutes": 20},
-             {"name": "PE", "activity": "pe", "start": 11 * 60, "minutes": 40},
-             {"name": "Recess", "activity": "recess", "start": 12 * 60, "minutes": 30}]
-    plan = planner.plan_school(fc, slots, students=600, day="today")
-    rows = {r["name"]: r for r in plan["rows"]}
-    assert rows["PE"]["action"] == "move" and rows["PE"]["final"]["start"] < 10 * 60
-    finals = sorted((r["final"]["start"], r["final"]["end"]) for r in plan["rows"] if r["action"] != "indoors")
-    assert all(a[1] <= b[0] for a, b in zip(finals, finals[1:]))
-    assert plan["saved_pct"] > 0
-
-
 def test_heat_makes_children_breathe_harder():
     assert budget.heat_vent_factor(20) == 1.0
     assert budget.heat_vent_factor(30) == pytest.approx(1.24)
@@ -169,24 +156,7 @@ def test_report_text_is_safe_for_pdf_fonts():
     assert report.clean("आरव") == ""
 
 
-def test_parent_and_school_reports_are_pdfs():
+def test_parent_report_is_a_pdf():
     fc = make_forecast(lambda h: 25 if h < 12 else 140)
     plan = planner.plan_parent(fc, Profile(), "today")
     assert report.parent_pdf(plan, "Delhi", "Aarav", "note").startswith(b"%PDF")
-    slots = [{"name": "PE", "activity": "pe", "start": 11 * 60, "minutes": 40}]
-    school = planner.plan_school(fc, slots, day="today")
-    assert report.school_pdf(school, "Delhi", "DPS", "Dear Parents").startswith(b"%PDF")
-
-
-def test_school_fixed_slot_never_moves():
-    fc = make_forecast(lambda h: 25 if h < 10 else 130)
-    slots = [{"name": "PE", "activity": "pe", "start": 11 * 60, "minutes": 40, "movable": False}]
-    row = planner.plan_school(fc, slots, day="today")["rows"][0]
-    assert row["action"] in ("indoors", "easy")
-
-
-def test_school_today_does_not_move_into_the_past():
-    fc = make_forecast(lambda h: 25 if h < 10 else 130, now_hour=11)
-    slots = [{"name": "Recess", "activity": "recess", "start": 12 * 60, "minutes": 30}]
-    row = planner.plan_school(fc, slots, day="today")["rows"][0]
-    assert row["action"] != "move" or row["final"]["start"] >= 11 * 60
