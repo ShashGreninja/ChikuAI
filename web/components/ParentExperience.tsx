@@ -5,10 +5,12 @@ import { getHealth, getNarration, getParentPlan, type ParentQuery } from "@/lib/
 import { isComplete, nextStep, type Answers, type StepId } from "@/lib/answers";
 import { moodFor, skyFor } from "@/lib/mood";
 import type { Narration, ParentPlan } from "@/lib/types";
+import AirSign from "./AirSign";
 import Chiku, { type Mood } from "./Chiku";
 import ChikuGuide, { type Phase } from "./ChikuGuide";
 import PlanDashboard from "./PlanDashboard";
 import Scene, { type Sky } from "./Scene";
+import WhyChiku from "./WhyChiku";
 import styles from "./ParentExperience.module.css";
 
 const STORE = "bk.answers.v2";
@@ -121,6 +123,7 @@ export default function ParentExperience() {
     <>
       <section className={styles.stage}>
         <Scene sky={sky} />
+        <AirSign place={answers.place} />
         <div className={styles.inner}>
           <div className={styles.chiku}>
             <Chiku mood={mood} size={230} />
@@ -146,7 +149,7 @@ export default function ParentExperience() {
         </div>
       </section>
 
-      {showPlan && <PlanDashboard plan={plan} answers={answers} />}
+      {showPlan ? <PlanDashboard plan={plan} answers={answers} chat={agentEnabled} /> : <WhyChiku />}
     </>
   );
 }

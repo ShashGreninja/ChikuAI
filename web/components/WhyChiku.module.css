@@ -1,0 +1,199 @@
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 56px 24px 0;
+  display: grid;
+  gap: 56px;
+}
+
+.why h2,
+.how h2 {
+  text-align: center;
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+  margin-bottom: 24px;
+}
+
+.reasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.reasons li {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.reasons li:nth-child(2) {
+  transform: translateY(10px);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background: var(--sky-soft);
+  margin-bottom: 12px;
+}
+
+.reasons li:nth-child(2) .icon {
+  background: var(--marigold-soft);
+}
+
+.reasons li:nth-child(3) .icon {
+  background: #f6c3a9;
+}
+
+.reasons h3,
+.steps h3 {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.reasons p,
+.steps p {
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  position: relative;
+}
+
+/* dashed path joining the three steps */
+.steps::before {
+  content: "";
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: 48px;
+  border-top: 3px dashed var(--ink-3);
+  z-index: 0;
+}
+
+.steps li {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.bird {
+  position: relative;
+  width: 112px;
+  height: 104px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2.5px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.num {
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--marigold);
+  border: 2px solid var(--line);
+  font-family: var(--font-display);
+  font-weight: 800;
+}
+
+.ctas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.cta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  text-decoration: none;
+  border: 2.5px solid var(--line);
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 5px 5px 0 var(--line);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.cta:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 var(--line);
+}
+
+.cta[data-tone="school"] {
+  background: var(--leaf-soft);
+}
+
+.cta[data-tone="how"] {
+  background: var(--marigold-soft);
+}
+
+.cta b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.cta small {
+  display: block;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+.ctaIcon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--line);
+}
+
+.arrow {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+}
+
+@media (max-width: 860px) {
+  .reasons,
+  .steps,
+  .ctas {
+    grid-template-columns: 1fr;
+  }
+  .reasons li:nth-child(2) {
+    transform: none;
+  }
+  .steps::before {
+    display: none;
+  }
+  .steps {
+    gap: 28px;
+  }
+}
