@@ -15,14 +15,14 @@ load_dotenv(HERE / ".env")
 load_dotenv(HERE.parent / ".env")
 
 import uvicorn  # noqa: E402
-from fastapi import FastAPI, HTTPException, Query  # noqa: E402
+from fastapi import Depends, FastAPI, HTTPException, Query  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 from baharkhelo import agent, data, planner  # noqa: E402
 from baharkhelo.exposure import Profile  # noqa: E402
 
 log = logging.getLogger("baharkhelo")
-app = FastAPI(title="Bahar Khelo API", version="1.0")
+app = FastAPI(title="Bahar Khelo API", version="2.0")
 
 Day = Literal["today", "tomorrow"]
 Age = Literal["3-5", "6-10", "11-15"]
@@ -48,13 +48,49 @@ def places(q: str = Query(min_length=2, max_length=80)):
         raise HTTPException(503, str(e)) from e
 
 
+class PlanQuery(BaseModel):
+    lat: float = Field(ge=6, le=38)
+    lon: float = Field(ge=68, le=98)
+    age: Age = "6-10"
+    activity: Literal["play", "cycling", "sports", "walk"] = "play"
+    minutes: int = Field(60, ge=10, le=240)
+    asthma: bool = False
+    day: Day = "today"
+    usual: int = Field(17 * 60, ge=6 * 60, le=19 * 60)
+
+    def run(self) -> dict:
+        p = Profile(age=self.age, activity=self.activity, minutes=self.minutes, asthma=self.asthma)
+        return planner.plan_parent(_forecast(self.lat, self.lon), p, self.day, self.usual)
+
+
 @app.get("/api/plan")
-def plan(lat: float = Query(ge=6, le=38), lon: float = Query(ge=68, le=98),
-         age: Age = "6-10", activity: Literal["play", "cycling", "sports", "walk"] = "play",
-         minutes: int = Query(60, ge=10, le=240), asthma: bool = False, day: Day = "today",
-         usual: int = Query(17 * 60, ge=6 * 60, le=19 * 60)):
-    profile = Profile(age=age, activity=activity, minutes=minutes, asthma=asthma)
-    return planner.plan_parent(_forecast(lat, lon), profile, day, usual)
+def plan(q: PlanQuery = Depends()):
+    return q.run()
+
+
+class NarrateRequest(PlanQuery):
+    name: str | None = Field(None, max_length=30)
+    lang: Literal["en", "hi"] = "en"
+
+
+@app.post("/api/narrate")
+def narrate(req: NarrateRequest):
+    return agent.narrate(req.run(), (req.name or "").strip() or None, req.lang)
+
+
+class IntakeRequest(BaseModel):
+    text: str = Field(min_length=3, max_length=500)
+
+
+@app.post("/api/intake")
+def intake(req: IntakeRequest):
+    if not agent.enabled():
+        raise HTTPException(503, "Free-text answers need GEMINI_API_KEY in api/.env")
+    try:
+        return agent.intake(req.text)
+    except Exception as e:
+        log.exception("intake failed")
+        raise HTTPException(502, "Chiku couldn't read that. Try the buttons instead.") from e
 
 
 class Slot(BaseModel):
