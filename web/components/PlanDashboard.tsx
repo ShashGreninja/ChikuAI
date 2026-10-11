@@ -10,7 +10,12 @@ import WhyPanel from "./WhyPanel";
 import ui from "./ui.module.css";
 import styles from "./PlanDashboard.module.css";
 
-export default function PlanDashboard({ plan, answers }: { plan: ParentPlan; answers: Answers }) {
+export default function PlanDashboard({ plan, answers, chat }: {
+  plan: ParentPlan;
+  answers: Answers;
+  /** Whether the Ask Chiku agent is available on this server. */
+  chat: boolean;
+}) {
   const who = childWord(answers);
   const pick = plan.pick;
   const place = answers.place!;
@@ -59,26 +64,33 @@ export default function PlanDashboard({ plan, answers }: { plan: ParentPlan; ans
         </article>
 
         {pick && (
-          <article className={`${ui.card} ${styles.wide}`}>
+          <article className={`${ui.card} ${chat ? styles.wide : styles.full}`}>
             <h3 className={ui.cardTitle}>{who.charAt(0).toUpperCase() + who.slice(1)}&apos;s lung budget</h3>
             <p className={styles.budgetHead}>{budgetHeadline(plan)}</p>
-            <BudgetRings rows={budgetRows(plan)} />
-            <p className={styles.caption}>
-              100% is the pollution {who} would breathe in a whole day of air at the WHO guideline
-              ({nf.format(plan.profile.daily_litres)} litres at this age). One outing shouldn&apos;t use most of it.
-            </p>
+            <div className={styles.budgetBody} data-split={!chat || undefined}>
+              <div>
+                <BudgetRings rows={budgetRows(plan)} />
+                <p className={styles.caption}>
+                  100% is the pollution {who} would breathe in a whole day of air at the WHO guideline
+                  ({nf.format(plan.profile.daily_litres)} litres at this age). One outing shouldn&apos;t use most of it.
+                </p>
+              </div>
+              <BudgetMaths plan={plan} />
+            </div>
           </article>
         )}
 
-        <article className={`${ui.card} ${styles.narrow}`}>
-          <AskChiku
-            bare
-            context={{
-              place: place.name, lat: place.lat, lon: place.lon, child: answers.name ?? null,
-              age: plan.profile.age, asthma: plan.profile.asthma, day: plan.day,
-            }}
-          />
-        </article>
+        {chat && (
+          <article className={`${ui.card} ${styles.narrow}`}>
+            <AskChiku
+              bare
+              context={{
+                place: place.name, lat: place.lat, lon: place.lon, child: answers.name ?? null,
+                age: plan.profile.age, asthma: plan.profile.asthma, day: plan.day,
+              }}
+            />
+          </article>
+        )}
 
         <div className={styles.full}>
           <WhyPanel plan={plan} />
@@ -93,6 +105,37 @@ export default function PlanDashboard({ plan, answers }: { plan: ParentPlan; ans
         </div>
       </div>
     </section>
+  );
+}
+
+/** The pick's budget worked out step by step, so the number isn't a black box. */
+function BudgetMaths({ plan }: { plan: ParentPlan }) {
+  const p = plan.pick!;
+  const pr = plan.profile;
+  const litres = pr.litres_per_min * p.vent_x * p.minutes;
+  const airX = ((p.budget_pct / 100) * pr.daily_litres) / litres;
+  return (
+    <ol className={styles.maths} aria-label="How the budget for Chiku's pick is worked out">
+      <li>
+        <span>Breathing</span>
+        <b>
+          {pr.litres_per_min} L/min × {p.minutes} min{p.vent_x > 1.01 ? ` × ${p.vent_x} heat` : ""}
+        </b>
+        <em>= {nf.format(Math.round(litres))} litres of air</em>
+      </li>
+      <li>
+        <span>Air quality</span>
+        <b>{airX.toFixed(1)}× the WHO guideline</b>
+        <em>on average across the window, worst pollutant</em>
+      </li>
+      <li>
+        <span>Spend</span>
+        <b>
+          {nf.format(Math.round(litres * airX))} guideline-litres ÷ {nf.format(pr.daily_litres)}
+        </b>
+        <em>= {p.budget_pct}% of the day&apos;s budget</em>
+      </li>
+    </ol>
   );
 }
 
