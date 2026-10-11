@@ -233,7 +233,7 @@ class CallRequest(BaseModel):
 @app.post("/api/call")
 def request_call(req: CallRequest, request: Request):
     if not phone.enabled():
-        raise HTTPException(503, "Calls aren't available right now.")
+        raise HTTPException(503, "Chiku's phone line isn't open yet. You can plan right here on the website meanwhile.")
     if not req.consent:
         raise HTTPException(422, "Please tick the box so Chiku can call you.")
     number = phone.normalise(req.phone)

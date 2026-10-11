@@ -1,18 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import CallForm, { useCallsAvailable } from "./CallForm";
+import CallForm from "./CallForm";
 import Chiku from "./Chiku";
 import Icon from "./Icon";
 import styles from "./CallButton.module.css";
 
 /** Phone icon in the header that opens the "Call Chiku" dialog. */
 export default function CallButton() {
-  const available = useCallsAvailable();
   const dialog = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [calling, setCalling] = useState(false);
-  if (!available) return null;
 
   function show() {
     setOpen(true);

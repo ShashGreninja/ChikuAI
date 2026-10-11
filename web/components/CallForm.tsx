@@ -1,19 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getHealth, requestCall } from "@/lib/api";
+import { useState } from "react";
+import { requestCall } from "@/lib/api";
 import Icon from "./Icon";
 import ui from "./ui.module.css";
 import styles from "./CallForm.module.css";
-
-/** True once the server has Twilio set up; until then every call entry point stays hidden. */
-export function useCallsAvailable(): boolean {
-  const [available, setAvailable] = useState(false);
-  useEffect(() => {
-    getHealth().then((h) => setAvailable(h.calls)).catch(() => {});
-  }, []);
-  return available;
-}
 
 /** Number, language, consent, then "Calling you now". Shared by the /parents card and the landing page button. */
 export default function CallForm({ titleId, onCallingChange }: {
