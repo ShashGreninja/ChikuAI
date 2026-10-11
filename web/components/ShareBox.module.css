@@ -1,0 +1,71 @@
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sub {
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+.lang {
+  display: inline-flex;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.lang button {
+  border: 0;
+  background: #fff;
+  padding: 4px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lang button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.msg {
+  white-space: pre-wrap;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  background: #e7f5dc;
+  border-radius: 14px 14px 14px 4px;
+  padding: 12px 14px;
+  margin: 0 0 12px;
+  border: 1.5px solid #b9d9a5;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wa {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 6px 16px 4px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: #25d366;
+  color: #0b2e17;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.wa:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--line);
+}
