@@ -1,13 +1,11 @@
-"""India National Air Quality Index (CPCB, 2014) and NAAQS-relative exposure.
+"""India National Air Quality Index (CPCB, 2014).
 
 Two views of the same forecast:
-  * `official_aqi`  – the day's AQI the CPCB way: 24-h means for PM/NO₂/SO₂, 8-h for O₃/CO.
-  * `hourly_aqi`    – an hour-by-hour indicative AQI for planning. PM, NO₂ and SO₂ use the
-                      hourly value (what a child actually breathes in that hour); O₃ and CO keep
-                      CPCB's 8-hour rolling mean.
-  * `air_factor`    – concentration ÷ India's NAAQS limit for the dominant pollutant. 1.0 means
-                      "breathing air exactly at the legal limit". Linear in concentration, so it
-                      can be integrated into a dose (unlike AQI, which is piecewise).
+  * `official_conc`: the CPCB way, with 24 h means for PM/NO₂/SO₂ and 8 h means for O₃/CO.
+    Used for the day's headline AQI.
+  * `planning_conc`: hour by hour, for deciding when to go out. PM, NO₂ and SO₂ use the
+    hourly value (what a child actually breathes in that hour); O₃ and CO keep CPCB's
+    8-hour rolling mean.
 """
 from __future__ import annotations
 
@@ -30,10 +28,6 @@ BREAKPOINTS: dict[str, tuple[float, ...]] = {
 # CPCB averaging period (hours) for each pollutant.
 AVERAGING = {"pm2_5": 24, "pm10": 24, "nitrogen_dioxide": 24, "sulphur_dioxide": 24,
              "ozone": 8, "carbon_monoxide": 8}
-
-# National Ambient Air Quality Standards (2009) — the AQI 100 line. µg/m³.
-NAAQS = {"pm2_5": 60, "pm10": 100, "nitrogen_dioxide": 80, "sulphur_dioxide": 80,
-         "ozone": 100, "carbon_monoxide": 2000}
 
 LABEL = {"pm2_5": "PM2.5", "pm10": "PM10", "nitrogen_dioxide": "NO₂", "ozone": "O₃",
          "carbon_monoxide": "CO", "sulphur_dioxide": "SO₂"}
@@ -75,7 +69,6 @@ def _rolling(hours: Sequence[Hour], i: int, pollutant: str, window: int) -> floa
 
 
 def planning_conc(hours: Sequence[Hour], i: int) -> dict[str, float]:
-    """Concentrations used for hour-level planning (see module docstring)."""
     out = dict(hours[i].conc)
     for p in ("ozone", "carbon_monoxide"):
         out[p] = _rolling(hours, i, p, AVERAGING[p])
@@ -84,9 +77,3 @@ def planning_conc(hours: Sequence[Hour], i: int) -> dict[str, float]:
 
 def official_conc(hours: Sequence[Hour], i: int) -> dict[str, float]:
     return {p: _rolling(hours, i, p, AVERAGING[p]) for p in BREAKPOINTS}
-
-
-def air_factor(conc: dict[str, float]) -> tuple[float, str]:
-    ratios = {p: conc[p] / NAAQS[p] for p in NAAQS}
-    dom = max(ratios, key=ratios.__getitem__)
-    return ratios[dom], dom

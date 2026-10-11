@@ -1,7 +1,7 @@
-"""Open-Meteo client: hourly air-quality (CAMS) + weather forecasts and place search.
+"""Open-Meteo client: hourly air-quality (CAMS) and weather forecasts, plus place search.
 
 No API key needed. Responses are cached in-process for 15 minutes so the dashboard,
-the school planner and the agent can all hit the same forecast without re-fetching.
+the school planner and the agent can all use the same forecast without re-fetching.
 """
 from __future__ import annotations
 
