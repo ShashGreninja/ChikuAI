@@ -82,6 +82,11 @@ Tests:
 cd api; ..\.venv\Scripts\python -m pytest
 ```
 
+## Deploy on AWS
+
+- **API → AWS App Runner** from this repo, source directory `api`, using `api/apprunner.yaml`. The AI features use Amazon Bedrock (Nova 2 Lite) through the service's instance role, which needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
+- **Web → AWS Amplify Hosting**, monorepo root `web`, with the environment variable `API_URL` set to the App Runner URL. Next.js forwards `/api/*` there.
+
 ## Data & credits
 
 - Forecasts: [Open-Meteo](https://open-meteo.com) (Copernicus CAMS air quality, national weather models), CC BY 4.0

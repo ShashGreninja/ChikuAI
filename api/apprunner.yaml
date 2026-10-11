@@ -6,7 +6,8 @@ build:
       - python3 -m pip install --upgrade pip
 run:
   runtime-version: 3.11
-  # Dependencies are installed at pre-run so they live in the image App Runner actually runs.
+  # The revised Python 3.11 build drops packages installed during `build`,
+  # so dependencies are installed at pre-run, inside the image App Runner actually runs.
   pre-run:
     - pip3 install -r requirements.txt
   command: python3 main.py
@@ -20,3 +21,7 @@ run:
       value: "8000"
     - name: AWS_REGION
       value: "ap-south-1"
+    # Amazon Nova 2 Lite through the global inference profile. Needs an instance role
+    # that allows bedrock:InvokeModel (see README, "Deploy on AWS").
+    - name: BEDROCK_MODEL_ID
+      value: "global.amazon.nova-2-lite-v1:0"
