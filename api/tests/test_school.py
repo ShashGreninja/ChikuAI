@@ -1,4 +1,4 @@
-from baharkhelo import report, school
+from chiku import report, school
 from tests.test_core import make_forecast
 
 CLASSES = [{"id": "3a", "name": "3A", "age": "6-10", "asthma": 0},

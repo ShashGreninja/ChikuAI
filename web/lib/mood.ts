@@ -20,7 +20,7 @@ export function skyFor(pick: WindowView | null, hours: HourView[]): Sky {
   return pick.level >= 2 ? "smog" : "hazy";
 }
 
-/** WBGT flag lines, mirrored from api/baharkhelo/heat.py for the explainer. */
+/** WBGT flag lines, mirrored from api/chiku/heat.py for the explainer. */
 export const HEAT_THRESHOLDS: Record<string, [number, number, number]> = {
   sedentary: [28, 31, 33],
   light: [27, 30, 32],

@@ -19,10 +19,10 @@ import uvicorn  # noqa: E402
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
-from baharkhelo import agent, data, mailer, phone, planner, report, school, voice  # noqa: E402
-from baharkhelo.exposure import Profile  # noqa: E402
+from chiku import agent, data, mailer, phone, planner, report, school, voice  # noqa: E402
+from chiku.exposure import Profile  # noqa: E402
 
-log = logging.getLogger("baharkhelo")
+log = logging.getLogger("chiku")
 app = FastAPI(title="Bahar Khelo API", version="2.0")
 
 Day = Literal["today", "tomorrow"]

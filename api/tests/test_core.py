@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from baharkhelo import aqi, budget, heat, planner, prevention, report
-from baharkhelo.data import Forecast, Hour
-from baharkhelo.exposure import Profile, segments
+from chiku import aqi, budget, heat, planner, prevention, report
+from chiku.data import Forecast, Hour
+from chiku.exposure import Profile, segments
 
 CLEAN = {"pm2_5": 20, "pm10": 40, "nitrogen_dioxide": 20, "ozone": 40,
          "carbon_monoxide": 500, "sulphur_dioxide": 10}

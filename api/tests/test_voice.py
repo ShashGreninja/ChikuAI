@@ -3,7 +3,7 @@ from urllib.parse import parse_qsl, urlparse
 
 import pytest
 
-from baharkhelo import phone, voice
+from chiku import phone, voice
 from tests.test_core import make_forecast
 
 
