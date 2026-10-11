@@ -75,6 +75,25 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M7 12.5V17c2.5 2 7.5 2 10 0v-4.5M21 10v5" />
     </>
   ),
+  download: (
+    <>
+      <path d="M12 4v11M7.5 10.5L12 15l4.5-4.5" />
+      <path d="M5 19h14" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="3" y="5.5" width="18" height="13" rx="2" />
+      <path d="M3.5 7l8.5 6 8.5-6" />
+    </>
+  ),
+  parent: (
+    <>
+      <circle cx="8.5" cy="6.5" r="2.5" />
+      <circle cx="16.5" cy="10" r="2" />
+      <path d="M4.5 20v-5.5a4 4 0 0 1 8 0V20M13.5 20v-3.5a3 3 0 0 1 6 0V20" />
+    </>
+  ),
   split: (
     <>
       <circle cx="12" cy="12" r="9" />

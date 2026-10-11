@@ -6,7 +6,7 @@ import Chiku from "./Chiku";
 import styles from "./SiteHeader.module.css";
 
 const LINKS = [
-  { href: "/", label: "For parents" },
+  { href: "/parents", label: "For parents" },
   { href: "/school", label: "For schools" },
   { href: "/how-it-works", label: "How it works" },
 ];

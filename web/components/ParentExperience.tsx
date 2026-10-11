@@ -10,7 +10,6 @@ import Chiku, { type Mood } from "./Chiku";
 import ChikuGuide, { type Phase } from "./ChikuGuide";
 import PlanDashboard from "./PlanDashboard";
 import Scene, { type Sky } from "./Scene";
-import WhyChiku from "./WhyChiku";
 import styles from "./ParentExperience.module.css";
 
 const STORE = "bk.answers.v2";
@@ -149,7 +148,15 @@ export default function ParentExperience() {
         </div>
       </section>
 
-      {showPlan ? <PlanDashboard plan={plan} answers={answers} chat={agentEnabled} /> : <WhyChiku />}
+      {showPlan && (
+        <PlanDashboard
+          plan={plan}
+          answers={answers}
+          chat={agentEnabled}
+          // the PDF uses standard fonts, so it carries the English note only
+          note={lang === "en" ? narration?.text ?? null : null}
+        />
+      )}
     </>
   );
 }
