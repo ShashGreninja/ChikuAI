@@ -108,3 +108,17 @@ def test_school_moves_pe_and_never_double_books():
     finals = sorted((r["final"]["start"], r["final"]["end"]) for r in plan["rows"] if r["action"] != "indoors")
     assert all(a[1] <= b[0] for a, b in zip(finals, finals[1:]))
     assert plan["saved_pct"] > 0
+
+
+def test_school_fixed_slot_never_moves():
+    fc = make_forecast(lambda h: 25 if h < 10 else 130)
+    slots = [{"name": "PE", "activity": "pe", "start": 11 * 60, "minutes": 40, "movable": False}]
+    row = planner.plan_school(fc, slots, day="today")["rows"][0]
+    assert row["action"] in ("indoors", "easy")
+
+
+def test_school_today_does_not_move_into_the_past():
+    fc = make_forecast(lambda h: 25 if h < 10 else 130, now_hour=11)
+    slots = [{"name": "Recess", "activity": "recess", "start": 12 * 60, "minutes": 30}]
+    row = planner.plan_school(fc, slots, day="today")["rows"][0]
+    assert row["action"] != "move" or row["final"]["start"] >= 11 * 60

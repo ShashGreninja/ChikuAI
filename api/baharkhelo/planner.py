@@ -183,6 +183,9 @@ def plan_school(fc: Forecast, slots: list[dict], students: int = 500, day: str =
     profiles = [Profile(age=age, activity=s["activity"], minutes=s["minutes"]) for s in slots]
     hours_by_slot = [assess(fc, day, p) for p in profiles]
     taken = {i: (s["start"], s["start"] + s["minutes"]) for i, s in enumerate(slots)}
+    earliest = school_start
+    if day == "today":  # never move a period into time that has already gone
+        earliest = max(school_start, _round_up(fc.now.hour * 60 + fc.now.minute))
     order = sorted(range(len(slots)), key=lambda i: (PRIORITY[profiles[i].intensity], slots[i]["start"]))
 
     rows: dict[int, dict] = {}
@@ -194,7 +197,7 @@ def plan_school(fc: Forecast, slots: list[dict], students: int = 500, day: str =
             raise ValueError(f"{s['name']} is outside the forecast range")
         others = [v for k, v in taken.items() if k != i]
         movable = s.get("movable", True)
-        best = _best(candidates(hours, p, school_start, school_end, blocked=others)) if movable else None
+        best = _best(candidates(hours, p, earliest, school_end, blocked=others)) if movable else None
 
         if cur.level == 0:
             action, final = "keep", cur
