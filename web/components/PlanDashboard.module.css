@@ -1,0 +1,102 @@
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 56px 24px 0;
+  scroll-margin-top: 12px;
+}
+
+.head {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.head h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  margin-top: 4px;
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+
+.tileLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tileValue {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.9rem;
+  line-height: 1.1;
+}
+
+.tileSub {
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  line-height: 1.35;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.wide {
+  grid-column: span 7;
+}
+
+.narrow {
+  grid-column: span 5;
+}
+
+.budgetHead {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 2px 0 16px;
+}
+
+.caption {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: var(--ink-3);
+}
+
+@media (max-width: 960px) {
+  .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wide,
+  .narrow {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+}

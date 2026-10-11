@@ -81,20 +81,23 @@ export default function WhyPanel({ plan }: { plan: ParentPlan }) {
         <section>
           <h3>Breathing: why kids are different</h3>
           <p className={styles.lead}>
-            A {pr.age}-year-old at {pr.intensity} effort breathes about <b>{pr.litres_per_min} litres a minute</b>. Per kg
-            of body weight that&apos;s <b>{pr.per_kg_vs_adult}×</b> what an adult takes in doing the same thing. That&apos;s
-            why the same AQI hits children harder.
+            A {pr.age} year old at {pr.intensity} effort breathes about <b>{pr.litres_per_min} litres a minute</b>. Per kg
+            of body weight that&apos;s <b>{pr.per_kg_vs_adult}×</b> what an adult takes in doing the same thing. Heat adds
+            more: breathing rises about 3% for every degree of WBGT above 22°C
+            {p.vent_x > 1.01 ? `, so +${Math.round((p.vent_x - 1) * 100)}% in this window` : ""}.
           </p>
         </section>
 
         <section>
-          <h3>How the pollution dose is counted</h3>
+          <h3>The lung budget</h3>
           <p className={styles.formula}>
-            dose = Σ<sub>hours</sub> (concentration ÷ India&apos;s legal limit) × litres/min × minutes
+            spend = Σ<sub>hours</sub> (C ÷ WHO guideline) × litres/min × heat factor × minutes
           </p>
           <p className={styles.lead}>
-            A dose of 1,000 means the child breathed in as much pollution as 1,000 litres of air sitting exactly at
-            the national limit. For this outing that&apos;s about <b>{p.pm25_ug} µg of PM2.5</b>.
+            Divided by what the child breathes in a whole day ({pr.daily_litres.toLocaleString("en-IN")} L), this
+            outing uses <b>{p.budget_pct}%</b> of a healthy day&apos;s allowance, about <b>{p.pm25_ug} µg of PM2.5</b>.
+            Windows are ranked on this spend inflated by forecast uncertainty, so a steady clean hour beats a clean
+            looking hour between two spikes. Confidence here: <b>{p.confidence}</b>.
           </p>
         </section>
       </div>

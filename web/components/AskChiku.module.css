@@ -10,6 +10,18 @@
   font-size: 0.92rem;
 }
 
+.ai {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  background: var(--ink);
+  color: var(--marigold);
+  border-radius: 6px;
+  padding: 1px 6px;
+  margin-left: 4px;
+}
+
 .off {
   background: var(--paper-2);
   border-radius: 12px;

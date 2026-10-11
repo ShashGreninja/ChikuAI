@@ -17,7 +17,11 @@ const SUGGESTIONS = [
   "कल सुबह साइकिल चलाना ठीक रहेगा?",
 ];
 
-export default function AskChiku({ context }: { context: Record<string, string | number | boolean | null> }) {
+export default function AskChiku({ context, bare = false }: {
+  context: Record<string, string | number | boolean | null>;
+  /** Render without its own card, when the parent already provides one. */
+  bare?: boolean;
+}) {
   const [enabled, setEnabled] = useState<boolean | null>(null);
   const [q, setQ] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -51,19 +55,24 @@ export default function AskChiku({ context }: { context: Record<string, string |
   }
 
   return (
-    <section className={ui.card}>
+    <section className={bare ? undefined : ui.card}>
       <div className={styles.head}>
         <Chiku mood={busy ? "thinking" : "careful"} size={56} />
         <div>
-          <h3 className={ui.cardTitle}>Ask Chiku</h3>
-          <p className={styles.sub}>Ask in English, Hindi or Hinglish. Chiku checks the forecast before answering.</p>
+          <h3 className={ui.cardTitle}>
+            Ask Chiku <span className={styles.ai}>AI</span>
+          </h3>
+          <p className={styles.sub}>
+            Ask anything in English, Hindi or Hinglish. The AI looks up the planner before it answers, so its numbers
+            match this page.
+          </p>
         </div>
       </div>
 
       {enabled === false ? (
         <p className={styles.off}>
-          Chat is off on this server. Add a free <code>GEMINI_API_KEY</code> to <code>api/.env</code> to switch it on.
-          Everything else works without it.
+          The AI chat is off on this server. Add a free <code>GEMINI_API_KEY</code> to <code>api/.env</code> to switch
+          it on. Everything else works without it.
         </p>
       ) : (
         <>

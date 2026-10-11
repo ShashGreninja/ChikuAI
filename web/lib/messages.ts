@@ -15,35 +15,36 @@ const CAT_HI: Record<string, string> = {
 const REASON_EN: Record<string, string> = { cooler: "cooler", cleaner: "cleaner air", safer: "safer" };
 const REASON_HI: Record<string, string> = { cooler: "कम गर्मी", cleaner: "साफ़ हवा", safer: "ज़्यादा सुरक्षित" };
 
-export function parentMessage(plan: ParentPlan, place: string, lang: Lang): string {
+export function parentMessage(plan: ParentPlan, place: string, name: string | null, lang: Lang): string {
   const p = plan.pick;
   const date = prettyDate(plan.date);
   if (!p) {
     return lang === "hi"
-      ? `🐦 बाहर खेलो — ${place}\nआज बाहर खेलने का सुरक्षित समय निकल चुका है। कल सुबह फिर देखें।`
-      : `🐦 Bahar Khelo — ${place}\nToday's safe outdoor window has passed. Check again for tomorrow morning.`;
+      ? `🐦 बाहर खेलो | ${place}\nआज बाहर खेलने का सुरक्षित समय निकल चुका है। कल सुबह फिर देखें।`
+      : `🐦 Bahar Khelo | ${place}\nToday's safe outdoor window has passed. Check again for tomorrow morning.`;
   }
   const saved = plan.saved_vs_usual_pct ?? 0;
   const usual = plan.usual?.start_label;
+  const tips = plan.prevention.slice(0, 2).map((s) => `• ${s.title}`);
   if (lang === "hi") {
     return [
-      `🐦 बाहर खेलो — ${place}, ${date}`,
-      `${plan.profile.activity} (${plan.profile.minutes} मिनट) के लिए सबसे अच्छा समय: ${p.label} — ${p.status.hi}`,
-      `हवा: AQI ${p.aqi} (${CAT_HI[p.aqi_cat] ?? p.aqi_cat}) · गर्मी: WBGT ${p.wbgt}°C`,
-      saved > 0 && usual ? `${usual} की जगह इस समय खेलने से ${saved}% कम प्रदूषण साँस में जाएगा।` : "",
+      `🐦 बाहर खेलो | ${place}, ${date}`,
+      `${name ?? "बच्चे"} के ${plan.profile.activity} (${plan.profile.minutes} मिनट) का सबसे अच्छा समय: ${p.label}, ${p.status.hi}`,
+      `हवा: AQI ${p.aqi} (${CAT_HI[p.aqi_cat] ?? p.aqi_cat}), गर्मी: WBGT ${p.wbgt}°C`,
+      saved >= 5 && usual ? `${usual} की जगह इस समय जाने से ${saved}% कम प्रदूषण साँस में जाएगा।` : "",
     ].filter(Boolean).join("\n");
   }
   return [
-    `🐦 Bahar Khelo — ${place}, ${date}`,
-    `Best time for ${plan.profile.activity.toLowerCase()} (${plan.profile.minutes} min): ${p.label} — ${p.status.label}`,
-    `Air: AQI ${p.aqi} (${p.aqi_cat}) · Heat: WBGT ${p.wbgt}°C`,
-    saved > 0 && usual ? `Going then instead of ${usual} means ${saved}% less pollution breathed in.` : "",
-    plan.tips[0] ?? "",
+    `🐦 Bahar Khelo | ${place}, ${date}`,
+    `Best time for ${name ?? "the kids"} (${plan.profile.activity.toLowerCase()}, ${plan.profile.minutes} min): ${p.label}. ${p.status.label}.`,
+    `Air: AQI ${p.aqi} (${p.aqi_cat}). Heat: WBGT ${p.wbgt}°C.`,
+    saved >= 5 && usual ? `Going then instead of ${usual} means ${saved}% less pollution breathed in.` : "",
+    ...tips,
   ].filter(Boolean).join("\n");
 }
 
 function rowLine(r: SchoolRow, lang: Lang): string {
-  const why = (lang === "hi" ? REASON_HI : REASON_EN);
+  const why = lang === "hi" ? REASON_HI : REASON_EN;
   const reasons = r.reasons.map((x) => why[x]).filter(Boolean).join(", ");
   if (lang === "hi") {
     switch (r.action) {
@@ -80,7 +81,7 @@ export function schoolCircular(plan: SchoolPlan, school: string, lang: Lang): st
       "बच्चों की सुरक्षा के लिए बाहर की गतिविधियों में ये बदलाव किए गए हैं:",
       rows,
       "कृपया बच्चों को पानी की बोतल दें। अस्थमा वाले बच्चों का इनहेलर बैग में रखें।",
-      "— विद्यालय प्रशासन",
+      "विद्यालय प्रशासन",
     ].join("\n");
   }
   return [
@@ -89,6 +90,6 @@ export function schoolCircular(plan: SchoolPlan, school: string, lang: Lang): st
     "To protect our students, outdoor activities are adjusted as follows:",
     rows,
     "Please send a water bottle, and keep inhalers in the bags of children with asthma.",
-    "— School Administration",
+    "School Administration",
   ].join("\n");
 }
