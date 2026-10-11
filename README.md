@@ -10,32 +10,37 @@ Every winter in North India, and on many summer afternoons everywhere, parents a
 
 ## What it does
 
-**For parents**: pick a place, the child's age, asthma (yes/no) and the activity. Chiku, the house sparrow, tells you:
+**For parents**: Chiku, a house sparrow, greets you on an illustrated park scene and asks one question at a time: where, the child's name and age, asthma, the activity, how long, today or tomorrow, and their usual time. You can also type it all in one line. Then Chiku gives:
 
-- the best window today or tomorrow, as one of four verdicts: *Go play / Go easy / Keep it short / Stay indoors*
-- an hour-by-hour strip showing air and heat separately, so you can see *why*
-- how much less pollution reaches their lungs compared with your usual time
-- a message you can forward in English or Hindi
+- the best window, as one of four verdicts: *Go play / Go easy / Keep it short / Stay indoors*, while the sky in the scene turns clear, hazy, smoggy or hot to match
+- a short personal note in English or Hindi
+- a checklist of precautions that depend on what's actually in the air (no mask advice on ozone days, for example), with water in millilitres and the best time to air out the house
+- an option to split the outing into two cleaner sessions when that saves a real share of the lung budget
+- the full picture: an hour-by-hour strip, lung budget rings for the pick vs. the usual and worst times, forecast confidence, and a shareable message
 
-**For schools**: enter the outdoor periods from the timetable (assembly, PE, recess, practice). The planner moves what can move, keeps fixed periods in place (moving them indoors if needed), never double-books a slot, and drafts the circular for parents.
+**For schools**: enter the outdoor periods from the timetable. The planner moves what can move, keeps fixed periods in place (taking them indoors if needed), never double-books a slot, and drafts the circular for parents.
 
-**Ask Chiku**: a chat agent (Strands Agents) for questions like *"Is 5 PM okay for cricket?"* or *"कल सुबह साइकिल चलाना ठीक रहेगा?"*. It answers by calling the same planner, so it can't make numbers up.
+## The decision model
 
-## How it decides
-
-| Piece | Method |
-|---|---|
-| Air | India National AQI from CPCB breakpoints. The day's headline uses CPCB averaging (24 h PM/NO₂/SO₂, 8 h O₃/CO). The hourly plan uses that hour's PM/NO₂/SO₂. |
-| Dose | `Σ (concentration ÷ NAAQS limit) × breathing rate × minutes`. Linear in concentration, so different times compare fairly. |
-| Breathing | US EPA Exposure Factors Handbook 2011 (Table 6-2), by age group and effort |
-| Heat | Outdoor WBGT = 0.7·Tw + 0.2·Tg + 0.1·Ta, with Stull wet-bulb and a solar globe estimate. Flags adapted from AAP/ACSM youth-sport guidance, stricter for harder play and for under-6s. |
-| Search | Every 30-minute start in children's outdoor hours. Pick the lowest flag, then the lowest dose plus heat strain. |
+1. **Guardrails.** Each hour gets an air flag (CPCB National AQI bands, one band stricter with asthma) and a heat flag (outdoor WBGT against youth-sport lines by effort level, stricter for under-6s). A lower flag always wins.
+2. **Lung budget.** Among equally flagged windows, pick the one that spends the least of the child's daily allowance, defined as what they would inhale in a full day at the WHO 2021 guideline:
+   `spend = Σ (C ÷ WHO guideline) × L/min × heat factor × minutes`, divided by the daily inhalation volume. Breathing rates by age and effort are from the US EPA Exposure Factors Handbook (2011).
+3. **Heat-driven breathing.** Breathing rises about 3% per °C of WBGT above 22°C, so hot hours cost more air.
+4. **Uncertainty.** Forecast error grows with lead time and local volatility. Ranking uses a risk-adjusted spend, so a steady clean hour beats a clean-looking hour between two spikes.
+5. **Split sessions.** For outings of 60 minutes or more, two halves at least two hours apart are offered when they save 20% or more.
+6. **Prevention.** Precautions are triggered by the dominant pollutant, heat, UV, rain, asthma and the forecast's cleanest and dirtiest hours.
 
 Full write-up, with known limitations, is on the in-app **How it works** page.
 
-## Built on AWS open source
+## Where AI is used
 
-- **Strands Agents SDK**: the Ask Chiku agent and its tools (`api/baharkhelo/agent.py`)
+The planner decides everything about air, heat and timing. The LLM (via **Strands Agents**, AWS open source) has three narrow jobs:
+
+- **Intake:** turns a free-text message into the planner's inputs with structured output
+- **Narration:** writes Chiku's note from the planner's numbers, in English or Hindi
+- **Ask Chiku:** answers follow-up questions by calling the planner as a tool
+
+Without an API key, notes fall back to a template and everything else works the same.
 
 ## Project layout
 
@@ -43,16 +48,18 @@ Full write-up, with known limitations, is on the in-app **How it works** page.
 api/                 Python, FastAPI
   baharkhelo/
     data.py          Open-Meteo client (CAMS air quality + weather), cached
-    aqi.py           CPCB AQI, NAAQS air factor
+    aqi.py           CPCB AQI and averaging
     heat.py          wet-bulb, WBGT, heat flags
     exposure.py      child breathing rates, activity profiles
-    planner.py       parent + school planners
-    agent.py         Strands agent ("Ask Chiku")
+    budget.py        lung budget, heat-driven breathing, forecast uncertainty
+    prevention.py    pollutant-aware precautions
+    planner.py       parent + school planners, split sessions
+    agent.py         Strands: intake, narration, Ask Chiku
   main.py            REST API
   tests/             pytest
 web/                 Next.js (App Router, TypeScript, CSS modules)
   app/               /, /school, /how-it-works
-  components/        Chiku mascot, DayStrip, ExposureBars, planners…
+  components/        Chiku, Scene, ChikuGuide, PlanDashboard, DayStrip, BudgetRings…
   lib/               API client, types, share messages (EN/HI)
 ```
 
@@ -67,7 +74,7 @@ npm --prefix web install
 .\dev.ps1
 ```
 
-Open http://localhost:3000. The planner needs no keys. To turn on the Ask Chiku chat, copy `api/.env.example` to `api/.env` and add a free Gemini key from https://aistudio.google.com/apikey.
+Open http://localhost:3000. The planner needs no keys. To turn on the AI features (free-text answers, Chiku's personal note, Ask Chiku), copy `api/.env.example` to `api/.env` and add a free Gemini key from https://aistudio.google.com/apikey.
 
 Tests:
 
@@ -79,6 +86,7 @@ cd api; ..\.venv\Scripts\python -m pytest
 
 - Forecasts: [Open-Meteo](https://open-meteo.com) (Copernicus CAMS air quality, national weather models), CC BY 4.0
 - AQI: Central Pollution Control Board, National Air Quality Index (2014)
-- Breathing rates: US EPA, Exposure Factors Handbook (2011)
+- Breathing rates and daily inhalation: US EPA, Exposure Factors Handbook (2011)
+- Lung budget reference: WHO Global Air Quality Guidelines (2021)
 
 *Bahar Khelo gives guidance, not medical advice.*
