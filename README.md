@@ -18,9 +18,17 @@ Every winter in North India, and on many summer afternoons everywhere, parents a
 - an option to split the outing into two cleaner sessions when that saves a real share of the lung budget
 - the full picture: an hour-by-hour strip, lung budget rings for the pick vs. the usual and worst times, forecast confidence, and a shareable message
 
-**For schools**: enter the outdoor periods from the timetable. The planner moves what can move, keeps fixed periods in place (taking them indoors if needed), never double-books a slot, and drafts the circular for parents.
+**By phone**: a parent can ask Chiku to call them instead (Twilio). Chiku asks the same questions, answered on the keypad (the city can be spoken), reads out the plan in English or Hindi, and takes a spoken follow-up question.
 
-**Reports**: parents and schools can download a one-page PDF of their plan. Schools can also email it, with the PDF attached, straight from the page.
+**For schools**: Indian school timetables are fixed, so periods never move. Set up the classes (with how many children have asthma, never names) and the weekly outdoor timetable once, or paste it from Excel. Every morning:
+
+- each outdoor period gets the right step of an activity ladder (e.g. PE: full games → light drills → yoga in the hall → stretching in class)
+- PE swaps between two classes are suggested when they leave both no worse off and one better, so the ground and PE teacher are used exactly as before
+- a government advisory switch (GRAP, heatwave orders) moves everything indoors
+- a morning bulletin: one-page PDF for the notice board, email, and a WhatsApp message in English or Hindi
+- an event day finder ranks the next three days for a match or sports day
+
+**Reports**: parents can download a one-page PDF of their plan; schools get the bulletin.
 
 ## The decision model
 
@@ -55,13 +63,18 @@ api/                 Python, FastAPI
     exposure.py      child breathing rates, activity profiles
     budget.py        lung budget, heat-driven breathing, forecast uncertainty
     prevention.py    pollutant-aware precautions
-    planner.py       parent + school planners, split sessions
+    planner.py       parent planner, split sessions
+    school.py        fixed-timetable plan: activity ladder, PE swaps, event finder
+    report.py        PDF reports and the school bulletin
+    voice.py         Twilio phone flow (TwiML), English and Hindi
+    phone.py         call requests, limits, webhook signatures
+    mailer.py        Amazon SES emails
     agent.py         Strands: intake, narration, Ask Chiku
   main.py            REST API
   tests/             pytest
 web/                 Next.js (App Router, TypeScript, CSS modules)
-  app/               /, /school, /how-it-works
-  components/        Chiku, Scene, ChikuGuide, PlanDashboard, DayStrip, BudgetRings…
+  app/               / (landing), /start, /parents, /school, /how-it-works
+  components/        Chiku, Scene, ChikuGuide, PlanDashboard, CallChiku, school/…
   lib/               API client, types, share messages (EN/HI)
 ```
 
@@ -88,6 +101,7 @@ cd api; ..\.venv\Scripts\python -m pytest
 
 - **API → AWS App Runner** from this repo, source directory `api`, using `api/apprunner.yaml`. The AI features use Amazon Bedrock (Nova 2 Lite) through the service's instance role, which needs `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
 - **Web → AWS Amplify Hosting**, monorepo root `web`, with the environment variable `API_URL` set to the App Runner URL. Next.js forwards `/api/*` there.
+- **Phone calls → Twilio.** Set `TWILIO_FROM_NUMBER` and `PUBLIC_BASE_URL` in `api/apprunner.yaml`, and keep `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` in SSM Parameter Store, referenced under `secrets`. Webhooks are signature-checked.
 - **Report emails → Amazon SES.** Set `SES_SENDER` in `api/apprunner.yaml` to a verified SES identity and allow `ses:SendRawEmail` on the instance role. Without it, "Email the report" opens the user's mail app and downloads the PDF to attach.
 
 ## Data & credits

@@ -29,3 +29,15 @@ run:
     # Uncomment and set it once the identity is verified in SES (same region).
     # - name: SES_SENDER
     #   value: "you@example.com"
+    # Phone calls through Twilio: the caller ID and this service's own public URL.
+    # - name: TWILIO_FROM_NUMBER
+    #   value: "+1XXXXXXXXXX"
+    # - name: PUBLIC_BASE_URL
+    #   value: "https://xxxx.ap-south-1.awsapprunner.com"
+  # Twilio credentials live in SSM Parameter Store (SecureString), never in this file.
+  # The instance role needs ssm:GetParameters on both parameters.
+  # secrets:
+  #   - name: TWILIO_ACCOUNT_SID
+  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/bahar-khelo/twilio-account-sid"
+  #   - name: TWILIO_AUTH_TOKEN
+  #     value-from: "arn:aws:ssm:ap-south-1:ACCOUNT_ID:parameter/bahar-khelo/twilio-auth-token"
